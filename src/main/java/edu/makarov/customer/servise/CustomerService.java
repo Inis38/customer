@@ -1,0 +1,9 @@
+package edu.makarov.customer.servise;
+
+import edu.makarov.customer.models.Customer;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface CustomerService extends BaseService<Customer> {
+}
