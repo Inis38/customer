@@ -4,6 +4,9 @@ import edu.makarov.customer.models.Subscription;
 import edu.makarov.customer.service.SubscriptionService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,36 +16,51 @@ import java.util.List;
 @ApiOperation(value = "/subscriptions", tags = "Customer")
 public class SubscriptionController {
 
+    private final SubscriptionService subscriptionService;
+
     @Autowired
-    private SubscriptionService subscriptionService;
+    public SubscriptionController(SubscriptionService subscriptionService) {
+        this.subscriptionService = subscriptionService;
+    }
 
-    @GetMapping
     @ApiOperation(value = "Fetch All Subscriptions", response = Iterable.class)
-    public List<Subscription> findAll() {
-        return subscriptionService.findAll();
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Subscription>> findAll() {
+        return new ResponseEntity<>(subscriptionService.findAll(), HttpStatus.OK);
     }
 
-    @GetMapping("{id}")
     @ApiOperation(value = "Fetch Subscription by Id", response = Subscription.class)
-    public Subscription findById(@PathVariable("id") long id) {
-        return subscriptionService.findById(id);
+    @RequestMapping(value = "{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Subscription> findById(@PathVariable("id") long id) {
+        Subscription subscription = subscriptionService.findById(id);
+        if (subscription == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(subscription, HttpStatus.OK);
     }
 
-    @PostMapping
     @ApiOperation(value = "Insert Subscription Record", response = Subscription.class)
-    public Subscription create(@RequestBody Subscription subscription) {
-        return subscriptionService.create(subscription);
+    @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Subscription> create(@RequestBody Subscription subscription) {
+        return new ResponseEntity<>(subscriptionService.create(subscription), HttpStatus.OK);
     }
 
-    @PutMapping("{id}")
     @ApiOperation(value = "Update Subscription Details", response = Subscription.class)
-    public Subscription update(@PathVariable("id") long id, @RequestBody Subscription subscription) {
-        return subscriptionService.update(id, subscription);
+    @RequestMapping(value = "{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Subscription> update(@PathVariable("id") long id, @RequestBody Subscription subscription) {
+        Subscription subscriptionFromDb = subscriptionService.update(id, subscription);
+        if (subscriptionFromDb == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(subscriptionFromDb, HttpStatus.OK);
     }
 
-    @DeleteMapping("{id}")
     @ApiOperation(value = "Delete a Subscription")
-    public void delete(@PathVariable("id") long id) {
-        subscriptionService.delete(id);
+    @RequestMapping(value = "{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Subscription> delete(@PathVariable("id") long id) {
+        if (!subscriptionService.delete(id)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

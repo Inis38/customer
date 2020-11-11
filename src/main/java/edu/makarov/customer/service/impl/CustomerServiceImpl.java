@@ -12,8 +12,12 @@ import java.util.List;
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
+    private final CustomerRepository customerRepository;
+
     @Autowired
-    private CustomerRepository customerRepository;
+    public CustomerServiceImpl(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
 
     @Override
     public List<Customer> findAll() {
@@ -22,7 +26,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer findById(long id) {
-        return customerRepository.findById(id).get();
+        return customerRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -33,12 +37,19 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Customer update(long id, Customer customer) {
         Customer customerFromDb = findById(id);
+        if (customerFromDb == null) {
+            return null;
+        }
         BeanUtils.copyProperties(customer, customerFromDb, "id");
         return create(customerFromDb);
     }
 
     @Override
-    public void delete(long id) {
+    public boolean delete(long id) {
+        if (findById(id) == null) {
+            return false;
+        }
         customerRepository.deleteById(id);
+        return true;
     }
 }

@@ -12,8 +12,12 @@ import java.util.List;
 @Service
 public class SubscriptionServiceImpl implements SubscriptionService {
 
+    private final SubscriptionRepository subscriptionRepository;
+
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository) {
+        this.subscriptionRepository = subscriptionRepository;
+    }
 
     @Override
     public List<Subscription> findAll() {
@@ -22,7 +26,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public Subscription findById(long id) {
-        return subscriptionRepository.findById(id).get();
+        return subscriptionRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -33,12 +37,19 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     public Subscription update(long id, Subscription subscription) {
         Subscription subscriptionFromDb = findById(id);
+        if (subscriptionFromDb == null) {
+            return null;
+        }
         BeanUtils.copyProperties(subscription, subscriptionFromDb, "id");
-        return create(subscription);
+        return create(subscriptionFromDb);
     }
 
     @Override
-    public void delete(long id) {
+    public boolean delete(long id) {
+        if (findById(id) == null) {
+            return false;
+        }
         subscriptionRepository.deleteById(id);
+        return true;
     }
 }

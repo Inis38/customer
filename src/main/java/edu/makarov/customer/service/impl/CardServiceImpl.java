@@ -1,5 +1,6 @@
 package edu.makarov.customer.service.impl;
 
+import edu.makarov.customer.models.Account;
 import edu.makarov.customer.models.Card;
 import edu.makarov.customer.repository.CardRepository;
 import edu.makarov.customer.service.AccountService;
@@ -13,11 +14,14 @@ import java.util.List;
 @Service
 public class CardServiceImpl implements CardService {
 
-    @Autowired
-    private CardRepository cardRepository;
+    private final CardRepository cardRepository;
+    private final AccountService accountService;
 
     @Autowired
-    private AccountService accountService;
+    public CardServiceImpl(CardRepository cardRepository, AccountService accountService) {
+        this.cardRepository = cardRepository;
+        this.accountService = accountService;
+    }
 
     @Override
     public List<Card> findAll() {
@@ -26,12 +30,15 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public List<Card> findAllByAccountId(long id) {
+        if (accountService.findById(id) == null) {
+            return null;
+        }
         return cardRepository.findCardByAccountId(id);
     }
 
     @Override
     public Card findById(long id) {
-        return cardRepository.findById(id).get();
+        return cardRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -41,20 +48,31 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public Card create(Card card, long accountId) {
-        card.setAccount(accountService.findById(accountId));
+        Account account = accountService.findById(accountId);
+        if (account == null) {
+            return null;
+        }
+        card.setAccount(account);
         return create(card);
     }
 
     @Override
     public Card update(long id, Card card) {
         Card cardFromDb = findById(id);
+        if (cardFromDb == null) {
+            return null;
+        }
         BeanUtils.copyProperties(card, cardFromDb, "id");
         return create(cardFromDb);
     }
 
     @Override
-    public void delete(long id) {
+    public boolean delete(long id) {
+        if (findById(id) == null) {
+            return false;
+        }
         cardRepository.deleteById(id);
+        return true;
     }
 
 }

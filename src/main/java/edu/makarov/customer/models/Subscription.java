@@ -28,6 +28,6 @@ public class Subscription {
     private String name;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "subscriptions")
+    @ManyToMany(mappedBy = "subscriptions", cascade = CascadeType.ALL)
     private List<Customer> customers;
 }
