@@ -11,15 +11,9 @@ import java.util.List;
 @RequestMapping()
 public class MainController {
 
-    private final AccountRepository accountRepository;
-
-    @Autowired
-    public MainController(AccountRepository accountRepository) {
-        this.accountRepository = accountRepository;
-    }
 
     @GetMapping
-    public String getAll() {
+    public String mainPage() {
         return "Main page";
     }
 

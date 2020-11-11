@@ -1,14 +1,13 @@
-package edu.makarov.customer.servise.impl;
+package edu.makarov.customer.service.impl;
 
 import edu.makarov.customer.models.Customer;
 import edu.makarov.customer.repository.CustomerRepository;
-import edu.makarov.customer.servise.CustomerService;
+import edu.makarov.customer.service.CustomerService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
