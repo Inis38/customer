@@ -1,9 +1,9 @@
-package edu.makarov.customer.servise.impl;
+package edu.makarov.customer.service.impl;
 
 import edu.makarov.customer.models.Card;
 import edu.makarov.customer.repository.CardRepository;
-import edu.makarov.customer.servise.AccountService;
-import edu.makarov.customer.servise.CardService;
+import edu.makarov.customer.service.AccountService;
+import edu.makarov.customer.service.CardService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

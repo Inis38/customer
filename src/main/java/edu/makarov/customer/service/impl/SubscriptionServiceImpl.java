@@ -1,8 +1,8 @@
-package edu.makarov.customer.servise.impl;
+package edu.makarov.customer.service.impl;
 
 import edu.makarov.customer.models.Subscription;
 import edu.makarov.customer.repository.SubscriptionRepository;
-import edu.makarov.customer.servise.SubscriptionService;
+import edu.makarov.customer.service.SubscriptionService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
