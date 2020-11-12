@@ -136,7 +136,7 @@ public class AccountServiceImplTest {
 
     @Test
     public void updateTest() {
-        account.setId(3);
+        account.setId(10);
         Mockito.doReturn(Optional.of(account)).when(accountRepository).findById(10L);
         Mockito.doReturn(account).when(accountRepository).save(account);
 
