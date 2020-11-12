@@ -2,7 +2,7 @@ package edu.makarov.customer.controller;
 
 import edu.makarov.customer.models.Account;
 import edu.makarov.customer.service.AccountService;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/customers/{customerId}/accounts")
@@ -70,5 +71,16 @@ public class AccountController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Top Up Account Balance", response = Account.class)
+    @RequestMapping(value = "{id}/addbalance", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Account> addBalance(@PathVariable("id") long id, @RequestBody Map<String, String> map) {
+        map.put("id", String.valueOf(id));
+        Account account = accountService.addBalance(map);
+        if (account == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(account, HttpStatus.OK);
     }
 }

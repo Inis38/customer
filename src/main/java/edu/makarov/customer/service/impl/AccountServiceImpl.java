@@ -9,7 +9,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -42,8 +44,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account create(Account customer) {
-        return accountRepository.save(customer);
+    public Account create(Account account) {
+        return accountRepository.save(account);
     }
 
     @Override
@@ -73,5 +75,27 @@ public class AccountServiceImpl implements AccountService {
         }
         accountRepository.deleteById(id);
         return true;
+    }
+
+    @Override
+    public Account addBalance(Map<String, String> map) {
+        Long id = Long.valueOf(map.get("id"));
+        BigDecimal summ = checkValue(map.get("addBalance"));
+        if (id == null || summ == null || summ.floatValue() < 0) {
+            return null;
+        }
+        Account account = findById(id);
+        account.setBalance(account.getBalance().add(summ));
+        return create(account);
+    }
+
+    private BigDecimal checkValue(String value) {
+        try {
+            BigDecimal decimalValue = new BigDecimal(value);
+            decimalValue = decimalValue.setScale(2, BigDecimal.ROUND_DOWN);
+            return decimalValue;
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }
