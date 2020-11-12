@@ -15,7 +15,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RunWith(SpringRunner.class)
@@ -179,5 +181,40 @@ public class AccountServiceImplTest {
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(accountRepository, Mockito.times(0)).deleteById(Mockito.anyLong());
         Assert.assertFalse(result);
+    }
+
+    @Test
+    public void addBalanceTest() {
+        Mockito.doReturn(Optional.of(account)).when(accountRepository).findById(Mockito.anyLong());
+        Mockito.doReturn(account).when(accountRepository).save(account);
+
+        Map<String, String> map = new HashMap<>();
+        map.put("id", "1");
+        map.put("addBalance", "100.51687");
+        Account accountFromDb = accountService.addBalance(map);
+
+        Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
+        Mockito.verify(accountRepository, Mockito.times(1)).save(Mockito.any());
+        Assert.assertEquals(accountFromDb.getBalance(), new BigDecimal("15100.51"));
+    }
+
+    @Test
+    public void addBalanceFailTest() {
+        Mockito.doReturn(Optional.of(account)).when(accountRepository).findById(Mockito.anyLong());
+        Mockito.doReturn(account).when(accountRepository).save(account);
+
+        Map<String, String> map = new HashMap<>();
+        map.put("id", "1");
+        map.put("addBalance", "test");
+        Account accountFromDb = accountService.addBalance(map);
+
+        Assert.assertNull(accountFromDb);
+
+        map.put("addBalance", "-200");
+        accountFromDb = accountService.addBalance(map);
+
+        Mockito.verify(accountRepository, Mockito.times(0)).findById(Mockito.anyLong());
+        Mockito.verify(accountRepository, Mockito.times(0)).save(Mockito.any());
+        Assert.assertNull(accountFromDb);
     }
 }
