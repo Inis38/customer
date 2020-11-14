@@ -61,7 +61,7 @@ public class AccountServiceImplTest {
 
         List<Account> accounts = accountService.findAllByCustomerId(3);
 
-        Mockito.verify(accountRepository, Mockito.times(1)).findAccountByCustomerId(3L);
+        Mockito.verify(accountRepository, Mockito.times(1)).findAccountsByCustomer(customer);
         Mockito.verify(customerRepository, Mockito.times(1)).findById(3L);
         Assert.assertNotNull(accounts);
     }
@@ -74,7 +74,7 @@ public class AccountServiceImplTest {
 
         Mockito.verify(accountRepository, Mockito.times(0)).findAccountByCustomerId(10L);
         Mockito.verify(customerRepository, Mockito.times(1)).findById(10L);
-        Assert.assertNull(accounts);
+        Assert.assertTrue(accounts.isEmpty());
     }
 
     @Test

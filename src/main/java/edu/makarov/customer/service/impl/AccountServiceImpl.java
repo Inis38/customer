@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,10 +34,10 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<Account> findAllByCustomerId(long id) {
-        if (customerService.findById(id) == null) {
-            return null;
-        }
-        return accountRepository.findAccountByCustomerId(id);
+
+        return customerService.findById(id)
+                .map(accountRepository::findAccountsByCustomer)
+                .orElse(new ArrayList<>());
     }
 
     @Override
@@ -51,7 +52,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account create(Account account, long customerId) {
-        Customer customer = customerService.findById(customerId);
+        Customer customer = customerService.findById(customerId).orElse(null);
         if (customer == null) {
             return null;
         }

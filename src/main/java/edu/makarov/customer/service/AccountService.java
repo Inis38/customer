@@ -9,6 +9,10 @@ import java.util.Map;
 
 public interface AccountService extends BaseService<Account> {
 
+    Account findById(long id);
+
+    Account update(long id, Account model);
+
     Account create(Account account, long customerId);
 
     List<Account> findAllByCustomerId(long id);
