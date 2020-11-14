@@ -1,5 +1,7 @@
 package edu.makarov.customer.controller;
 
+import edu.makarov.customer.exception.BadRequestException;
+import edu.makarov.customer.exception.RecordNotFoundException;
 import edu.makarov.customer.models.Card;
 import edu.makarov.customer.service.CardService;
 import io.swagger.annotations.ApiOperation;
@@ -46,11 +48,10 @@ public class CardController {
     @ApiOperation(value = "Insert Card Record", response = Card.class)
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Card> create(@RequestBody Card card, @PathVariable("accountId") long accountId) {
-        Card cardFromDb = cardService.create(card, accountId);
-        if (cardFromDb == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(cardFromDb, HttpStatus.OK);
+
+        return cardService.create(card, accountId)
+                .map(cardFromDb -> new ResponseEntity<>(cardFromDb, HttpStatus.OK))
+                .orElseThrow(() -> new RecordNotFoundException("Failed to create card. Account with id '" + accountId + "' not found"));
     }
 
     @ApiOperation(value = "Update Card Details", response = Card.class)

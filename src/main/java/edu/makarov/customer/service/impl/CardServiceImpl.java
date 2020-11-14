@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CardServiceImpl implements CardService {
@@ -30,7 +31,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public List<Card> findAllByAccountId(long id) {
-        if (accountService.findById(id) == null) {
+        if (!accountService.findById(id).isPresent()) {
             return null;
         }
         return cardRepository.findCardByAccountId(id);
@@ -47,13 +48,14 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public Card create(Card card, long accountId) {
-        Account account = accountService.findById(accountId);
-        if (account == null) {
-            return null;
-        }
-        card.setAccount(account);
-        return create(card);
+    public Optional<Card> create(Card card, long accountId) {
+
+        return accountService.findById(accountId)
+                .map(account -> {
+                    card.setAccount(account);
+                    return Optional.of(create(card));
+                })
+                .orElse(Optional.empty());
     }
 
     @Override

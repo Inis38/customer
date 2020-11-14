@@ -5,10 +5,9 @@ import edu.makarov.customer.models.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
-    List<Account> findAccountByCustomerId(long id);
-
-    List<Account> findAccountsByCustomer(Customer customer);
+    Optional<List<Account>> findAccountsByCustomer(Customer customer);
 }
