@@ -1,6 +1,8 @@
 package edu.makarov.customer.controller;
 
 import edu.makarov.customer.models.Account;
+import edu.makarov.customer.models.dto.BalanceChangeDTO;
+import edu.makarov.customer.models.dto.MoneyTransactionDTO;
 import edu.makarov.customer.service.AccountService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,12 +77,33 @@ public class AccountController {
 
     @ApiOperation(value = "Top Up Account Balance", response = Account.class)
     @RequestMapping(value = "{id}/addbalance", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Account> addBalance(@PathVariable("id") long id, @RequestBody Map<String, String> map) {
-        map.put("id", String.valueOf(id));
-        Account account = accountService.addBalance(map);
+    public ResponseEntity<Account> addBalance(@PathVariable("id") long id, @RequestBody BalanceChangeDTO balanceChangeDTO) {
+        balanceChangeDTO.setId(id);
+        Account account = accountService.increaseBalance(balanceChangeDTO);
         if (account == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(account, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Pay For Purchase", response = Account.class)
+    @RequestMapping(value = "{id}/pay", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Account> pay(@PathVariable("id") long id, @RequestBody BalanceChangeDTO balanceChangeDTO) {
+        balanceChangeDTO.setId(id);
+        Account account = accountService.increaseBalance(balanceChangeDTO);
+        if (account == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(account, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Transfer Money To Another Account", response = Account.class)
+    @RequestMapping(value = "{id}/transfer", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Account> transfer(@PathVariable("id") long id, @RequestBody MoneyTransactionDTO moneyTransactionDTO) {
+        moneyTransactionDTO.setReduceId(id);
+        if (!accountService.transferMoney(moneyTransactionDTO)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

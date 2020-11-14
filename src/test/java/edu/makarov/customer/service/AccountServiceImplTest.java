@@ -2,6 +2,8 @@ package edu.makarov.customer.service;
 
 import edu.makarov.customer.models.Account;
 import edu.makarov.customer.models.Customer;
+import edu.makarov.customer.models.dto.BalanceChangeDTO;
+import edu.makarov.customer.models.dto.MoneyTransactionDTO;
 import edu.makarov.customer.repository.AccountRepository;
 import edu.makarov.customer.repository.CustomerRepository;
 import org.junit.Assert;
@@ -15,9 +17,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RunWith(SpringRunner.class)
@@ -184,14 +184,12 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void addBalanceTest() {
+    public void increaseBalanceTest() {
         Mockito.doReturn(Optional.of(account)).when(accountRepository).findById(Mockito.anyLong());
         Mockito.doReturn(account).when(accountRepository).save(account);
 
-        Map<String, String> map = new HashMap<>();
-        map.put("id", "1");
-        map.put("addBalance", "100.51687");
-        Account accountFromDb = accountService.addBalance(map);
+        BalanceChangeDTO balanceChangeDTO = new BalanceChangeDTO(1, new BigDecimal("100.51687"));
+        Account accountFromDb = accountService.increaseBalance(balanceChangeDTO);
 
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(accountRepository, Mockito.times(1)).save(Mockito.any());
@@ -199,22 +197,91 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void addBalanceFailTest() {
+    public void increaseBalanceFailTest() {
         Mockito.doReturn(Optional.of(account)).when(accountRepository).findById(Mockito.anyLong());
         Mockito.doReturn(account).when(accountRepository).save(account);
 
-        Map<String, String> map = new HashMap<>();
-        map.put("id", "1");
-        map.put("addBalance", "test");
-        Account accountFromDb = accountService.addBalance(map);
-
-        Assert.assertNull(accountFromDb);
-
-        map.put("addBalance", "-200");
-        accountFromDb = accountService.addBalance(map);
+        BalanceChangeDTO balanceChangeDTO = new BalanceChangeDTO(1, new BigDecimal("-200"));
+        Account accountFromDb = accountService.increaseBalance(balanceChangeDTO);
 
         Mockito.verify(accountRepository, Mockito.times(0)).findById(Mockito.anyLong());
         Mockito.verify(accountRepository, Mockito.times(0)).save(Mockito.any());
         Assert.assertNull(accountFromDb);
+    }
+
+    @Test
+    public void reduceBalanceTest() {
+        Mockito.doReturn(Optional.of(account)).when(accountRepository).findById(Mockito.anyLong());
+        Mockito.doReturn(account).when(accountRepository).save(account);
+
+        BalanceChangeDTO balanceChangeDTO = new BalanceChangeDTO(1, new BigDecimal("100.504444"));
+        Account accountFromDb = accountService.reduceBalance(balanceChangeDTO);
+
+        Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
+        Mockito.verify(accountRepository, Mockito.times(1)).save(Mockito.any());
+        Assert.assertEquals(accountFromDb.getBalance(), new BigDecimal("14899.50"));
+    }
+
+    @Test
+    public void reduceBalanceFailTest() {
+        Mockito.doReturn(Optional.of(account)).when(accountRepository).findById(Mockito.anyLong());
+        Mockito.doReturn(account).when(accountRepository).save(account);
+
+        BalanceChangeDTO balanceChangeDTO = new BalanceChangeDTO(1, new BigDecimal("20000"));
+        Account accountFromDb = accountService.reduceBalance(balanceChangeDTO);
+
+        Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
+        Mockito.verify(accountRepository, Mockito.times(0)).save(Mockito.any());
+        Assert.assertNull(accountFromDb);
+    }
+
+    @Test
+    public void transferMoneyTest() {
+        Account to = new Account();
+        to.setId(1);
+        to.setBalance(new BigDecimal("1000"));
+
+        Account from = new Account();
+        from.setId(2);
+        from.setBalance(new BigDecimal("1000"));
+
+        Mockito.doReturn(Optional.of(to)).when(accountRepository).findById(1L);
+        Mockito.doReturn(Optional.of(from)).when(accountRepository).findById(2L);
+        Mockito.doReturn(to).when(accountRepository).save(to);
+        Mockito.doReturn(from).when(accountRepository).save(from);
+
+        MoneyTransactionDTO moneyTransactionDTO = new MoneyTransactionDTO(1, 2, new BigDecimal("500.55555"));
+
+        accountService.transferMoney(moneyTransactionDTO);
+
+        Mockito.verify(accountRepository, Mockito.times(4)).findById(Mockito.anyLong());
+        Mockito.verify(accountRepository, Mockito.times(2)).save(Mockito.any());
+        Assert.assertEquals(new BigDecimal("1500.55"), to.getBalance());
+        Assert.assertEquals(new BigDecimal("499.45"), from.getBalance());
+    }
+
+    @Test
+    public void transferMoneyFailTest() {
+        Account to = new Account();
+        to.setId(1);
+        to.setBalance(new BigDecimal("1000"));
+
+        Account from = new Account();
+        from.setId(2);
+        from.setBalance(new BigDecimal("1000"));
+
+        Mockito.doReturn(Optional.of(to)).when(accountRepository).findById(1L);
+        Mockito.doReturn(Optional.of(from)).when(accountRepository).findById(2L);
+        Mockito.doReturn(to).when(accountRepository).save(to);
+        Mockito.doReturn(from).when(accountRepository).save(from);
+
+        MoneyTransactionDTO moneyTransactionDTO = new MoneyTransactionDTO(1, 2, new BigDecimal("2000"));
+
+        accountService.transferMoney(moneyTransactionDTO);
+
+        Mockito.verify(accountRepository, Mockito.times(3)).findById(Mockito.anyLong());
+        Mockito.verify(accountRepository, Mockito.times(0)).save(Mockito.any());
+        Assert.assertEquals(new BigDecimal("1000"), to.getBalance());
+        Assert.assertEquals(new BigDecimal("1000"), from.getBalance());
     }
 }

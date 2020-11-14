@@ -2,6 +2,8 @@ package edu.makarov.customer.service.impl;
 
 import edu.makarov.customer.models.Account;
 import edu.makarov.customer.models.Customer;
+import edu.makarov.customer.models.dto.BalanceChangeDTO;
+import edu.makarov.customer.models.dto.MoneyTransactionDTO;
 import edu.makarov.customer.repository.AccountRepository;
 import edu.makarov.customer.service.AccountService;
 import edu.makarov.customer.service.CustomerService;
@@ -11,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -78,17 +79,62 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account addBalance(Map<String, String> map) {
-        Long id = Long.valueOf(map.get("id"));
-        BigDecimal summ = checkValue(map.get("addBalance"));
-        if (id == null || summ == null || summ.floatValue() < 0) {
+    public Account increaseBalance(BalanceChangeDTO balanceChangeDTO) {
+        Long id = balanceChangeDTO.getId();
+        BigDecimal sum = checkValue(balanceChangeDTO.getSum().toString());
+        if (id == null || sum == null || sum.floatValue() < 0) {
             return null;
         }
+        return increaseBalance(id, sum);
+    }
+
+    private Account increaseBalance(long id, BigDecimal sum) {
         Account account = findById(id);
-        account.setBalance(account.getBalance().add(summ));
+        account.setBalance(account.getBalance().add(sum));
         return create(account);
     }
 
+    @Override
+    public Account reduceBalance(BalanceChangeDTO balanceChangeDTO) {
+        Long id = Long.valueOf(balanceChangeDTO.getId());
+        BigDecimal sum = checkValue(balanceChangeDTO.getSum().toString());
+        if (id == null || sum == null || sum.floatValue() < 0) {
+            return null;
+        }
+        return reduceBalance(id, sum);
+    }
+
+    private Account reduceBalance(long id, BigDecimal sum) {
+        Account account = findById(id);
+        if (account.getBalance().floatValue() < sum.floatValue()) {
+            return null;
+        }
+        account.setBalance(account.getBalance().subtract(sum));
+        return create(account);
+    }
+
+    @Override
+    public boolean transferMoney(MoneyTransactionDTO transaction) {
+        long from = transaction.getReduceId();
+        long to = transaction.getIncreaseId();
+        BigDecimal sum = transaction.getSum().setScale(2, BigDecimal.ROUND_DOWN);
+        return transferMoney(from, to, sum);
+    }
+
+    private boolean transferMoney(long from, long to, BigDecimal sum) {
+        Account accountFrom = findById(from);
+        Account accountTo = findById(to);
+        if (accountFrom == null || accountTo == null) {
+            return false;
+        }
+        if (reduceBalance(accountFrom.getId(), sum) == null) {
+            return false;
+        }
+        increaseBalance(accountTo.getId(), sum);
+        return true;
+    }
+
+    //TODO отказаться от этого метода
     private BigDecimal checkValue(String value) {
         try {
             BigDecimal decimalValue = new BigDecimal(value);
