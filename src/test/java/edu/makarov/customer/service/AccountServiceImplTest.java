@@ -17,6 +17,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,44 +60,45 @@ public class AccountServiceImplTest {
     @Test
     public void findAllByCustomerIdTest() {
         Mockito.doReturn(Optional.of(customer)).when(customerRepository).findById(3L);
+        Mockito.doReturn(Optional.of(new ArrayList())).when(accountRepository).findAccountsByCustomer(customer);
 
-        List<Account> accounts = accountService.findAllByCustomerId(3);
+        Optional<List<Account>> accounts = accountService.findAllByCustomerId(3);
 
-        Mockito.verify(accountRepository, Mockito.times(1)).findAccountByCustomerId(3L);
+        Mockito.verify(accountRepository, Mockito.times(1)).findAccountsByCustomer(customer);
         Mockito.verify(customerRepository, Mockito.times(1)).findById(3L);
-        Assert.assertNotNull(accounts);
+        Assert.assertTrue(accounts.isPresent());
     }
 
     @Test
     public void findAllByCustomerIdFailTest() {
         Mockito.doReturn(Optional.empty()).when(customerRepository).findById(10L);
 
-        List<Account> accounts = accountService.findAllByCustomerId(10);
+        Optional<List<Account>> accounts = accountService.findAllByCustomerId(10);
 
-        Mockito.verify(accountRepository, Mockito.times(0)).findAccountByCustomerId(10L);
+        Mockito.verify(accountRepository, Mockito.times(0)).findAccountsByCustomer(customer);
         Mockito.verify(customerRepository, Mockito.times(1)).findById(10L);
-        Assert.assertNull(accounts);
+        Assert.assertFalse(accounts.isPresent());
     }
 
     @Test
     public void findByIdTest() {
         Mockito.doReturn(Optional.of(account)).when(accountRepository).findById(3L);
 
-        Account accountFromDb = accountService.findById(3);
+        Optional<Account> accountFromDb = accountService.findById(3);
 
         Mockito.verify(accountRepository, Mockito.times(1)).findById(3L);
         Assert.assertNotNull(accountFromDb);
-        Assert.assertEquals(account.getAccountNumber(), accountFromDb.getAccountNumber());
+        Assert.assertEquals(account.getAccountNumber(), accountFromDb.get().getAccountNumber());
     }
 
     @Test
     public void findByIdFailTest() {
         Mockito.doReturn(Optional.empty()).when(accountRepository).findById(10L);
 
-        Account accountFromDb = accountService.findById(10);
+        Optional<Account> accountFromDb = accountService.findById(10);
 
         Mockito.verify(accountRepository, Mockito.times(1)).findById(10L);
-        Assert.assertNull(accountFromDb);
+        Assert.assertFalse(accountFromDb.isPresent());
     }
 
     @Test
@@ -115,13 +118,13 @@ public class AccountServiceImplTest {
         Mockito.doReturn(Optional.of(customer)).when(customerRepository).findById(10L);
         Mockito.doReturn(account).when(accountRepository).save(account);
 
-        Account accountFromDb = accountService.create(account, 10);
+        Optional<Account> accountFromDb = accountService.create(account, 10);
 
         Mockito.verify(accountRepository, Mockito.times(1)).save(account);
         Mockito.verify(customerRepository, Mockito.times(1)).findById(10L);
-        Assert.assertNotNull(accountFromDb);
-        Assert.assertEquals(account.getAccountNumber(), accountFromDb.getAccountNumber());
-        Assert.assertNotNull(accountFromDb.getCustomer().getFullName());
+        Assert.assertTrue(accountFromDb.isPresent());
+        Assert.assertEquals(account.getAccountNumber(), accountFromDb.get().getAccountNumber());
+        Assert.assertNotNull(accountFromDb.get().getCustomer().getFullName());
     }
 
     @Test
@@ -129,11 +132,11 @@ public class AccountServiceImplTest {
         Mockito.doReturn(Optional.empty()).when(customerRepository).findById(10L);
         Mockito.doReturn(account).when(accountRepository).save(account);
 
-        Account accountFromDb = accountService.create(account, 10);
+        Optional<Account> accountFromDb = accountService.create(account, 10);
 
         Mockito.verify(accountRepository, Mockito.times(0)).save(account);
         Mockito.verify(customerRepository, Mockito.times(1)).findById(10L);
-        Assert.assertNull(accountFromDb);
+        Assert.assertFalse(accountFromDb.isPresent());
     }
 
     @Test
@@ -142,11 +145,11 @@ public class AccountServiceImplTest {
         Mockito.doReturn(Optional.of(account)).when(accountRepository).findById(10L);
         Mockito.doReturn(account).when(accountRepository).save(account);
 
-        Account accountFromDb = accountService.update(10, account);
+        Optional<Account> accountFromDb = accountService.update(10, account);
 
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(accountRepository, Mockito.times(1)).save(Mockito.any());
-        Assert.assertEquals(account.getId(), accountFromDb.getId());
+        Assert.assertEquals(account.getId(), accountFromDb.get().getId());
     }
 
     @Test
@@ -154,11 +157,11 @@ public class AccountServiceImplTest {
         Mockito.doReturn(Optional.empty()).when(accountRepository).findById(10L);
         Mockito.doReturn(account).when(accountRepository).save(account);
 
-        Account accountFromDb = accountService.update(10, account);
+        Optional<Account> accountFromDb = accountService.update(10, account);
 
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(accountRepository, Mockito.times(0)).save(Mockito.any());
-        Assert.assertNull(accountFromDb);
+        Assert.assertFalse(accountFromDb.isPresent());
     }
 
     @Test
@@ -189,11 +192,11 @@ public class AccountServiceImplTest {
         Mockito.doReturn(account).when(accountRepository).save(account);
 
         BalanceChangeDTO balanceChangeDTO = new BalanceChangeDTO(1, new BigDecimal("100.51687"));
-        Account accountFromDb = accountService.increaseBalance(balanceChangeDTO);
+        Optional<Account> accountFromDb = accountService.increaseBalance(balanceChangeDTO);
 
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(accountRepository, Mockito.times(1)).save(Mockito.any());
-        Assert.assertEquals(accountFromDb.getBalance(), new BigDecimal("15100.51"));
+        Assert.assertEquals(accountFromDb.get().getBalance(), new BigDecimal("15100.51"));
     }
 
     @Test
@@ -202,11 +205,11 @@ public class AccountServiceImplTest {
         Mockito.doReturn(account).when(accountRepository).save(account);
 
         BalanceChangeDTO balanceChangeDTO = new BalanceChangeDTO(1, new BigDecimal("-200"));
-        Account accountFromDb = accountService.increaseBalance(balanceChangeDTO);
+        Optional<Account> accountFromDb = accountService.increaseBalance(balanceChangeDTO);
 
         Mockito.verify(accountRepository, Mockito.times(0)).findById(Mockito.anyLong());
         Mockito.verify(accountRepository, Mockito.times(0)).save(Mockito.any());
-        Assert.assertNull(accountFromDb);
+        Assert.assertFalse(accountFromDb.isPresent());
     }
 
     @Test
@@ -215,11 +218,11 @@ public class AccountServiceImplTest {
         Mockito.doReturn(account).when(accountRepository).save(account);
 
         BalanceChangeDTO balanceChangeDTO = new BalanceChangeDTO(1, new BigDecimal("100.504444"));
-        Account accountFromDb = accountService.reduceBalance(balanceChangeDTO);
+        Optional<Account> accountFromDb = accountService.reduceBalance(balanceChangeDTO);
 
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(accountRepository, Mockito.times(1)).save(Mockito.any());
-        Assert.assertEquals(accountFromDb.getBalance(), new BigDecimal("14899.50"));
+        Assert.assertEquals(accountFromDb.get().getBalance(), new BigDecimal("14899.50"));
     }
 
     @Test
@@ -228,11 +231,11 @@ public class AccountServiceImplTest {
         Mockito.doReturn(account).when(accountRepository).save(account);
 
         BalanceChangeDTO balanceChangeDTO = new BalanceChangeDTO(1, new BigDecimal("20000"));
-        Account accountFromDb = accountService.reduceBalance(balanceChangeDTO);
+        Optional<Account> accountFromDb = accountService.reduceBalance(balanceChangeDTO);
 
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(accountRepository, Mockito.times(0)).save(Mockito.any());
-        Assert.assertNull(accountFromDb);
+        Assert.assertFalse(accountFromDb.isPresent());
     }
 
     @Test

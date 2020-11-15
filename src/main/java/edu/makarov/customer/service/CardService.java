@@ -3,10 +3,11 @@ package edu.makarov.customer.service;
 import edu.makarov.customer.models.Card;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CardService extends BaseService<Card> {
 
-    List<Card> findAllByAccountId(long id);
+    Optional<List<Card>> findAllByAccountId(long id);
 
-    Card create(Card account, long customerId);
+    Optional<Card> create(Card account, long customerId);
 }

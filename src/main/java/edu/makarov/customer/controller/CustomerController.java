@@ -1,5 +1,7 @@
 package edu.makarov.customer.controller;
 
+import edu.makarov.customer.exception.BadRequestException;
+import edu.makarov.customer.exception.RecordNotFoundException;
 import edu.makarov.customer.models.Customer;
 import edu.makarov.customer.service.CustomerService;
 import io.swagger.annotations.ApiOperation;
@@ -10,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/customers")
@@ -32,11 +35,10 @@ public class CustomerController {
     @ApiOperation(value = "Fetch Customer by Id", response = Customer.class)
     @RequestMapping(value = "{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Customer> findById(@PathVariable("id") long id) {
-        Customer customer = customerService.findById(id);
-        if (customer == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(customer, HttpStatus.OK);
+
+        return customerService.findById(id)
+                .map(c -> new ResponseEntity<>(c, HttpStatus.OK))
+                .orElseThrow(() -> new RecordNotFoundException("Customer with id '" + id + "' not found"));
     }
 
     @ApiOperation(value = "Insert Customer Record", response = Customer.class)
@@ -48,18 +50,17 @@ public class CustomerController {
     @ApiOperation(value = "Update Customer Details", response = Customer.class)
     @RequestMapping(value = "{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Customer> update(@PathVariable("id") long id, @RequestBody Customer customer) {
-        Customer customerFromDb = customerService.update(id, customer);
-        if (customerFromDb == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(customerFromDb, HttpStatus.OK);
+
+        return customerService.update(id, customer)
+                .map(c -> new ResponseEntity<>(c, HttpStatus.OK))
+                .orElseThrow(() -> new BadRequestException("Failed to update information for customer with id '" + id + "'"));
     }
 
     @ApiOperation(value = "Delete a Customer")
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Customer> delete(@PathVariable("id") long id) {
         if (!customerService.delete(id)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Failed to delete customer with id '" + id + "'");
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }

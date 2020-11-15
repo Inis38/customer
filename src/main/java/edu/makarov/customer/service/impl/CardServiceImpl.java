@@ -1,6 +1,5 @@
 package edu.makarov.customer.service.impl;
 
-import edu.makarov.customer.models.Account;
 import edu.makarov.customer.models.Card;
 import edu.makarov.customer.repository.CardRepository;
 import edu.makarov.customer.service.AccountService;
@@ -10,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CardServiceImpl implements CardService {
@@ -29,16 +29,16 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public List<Card> findAllByAccountId(long id) {
-        if (accountService.findById(id) == null) {
-            return null;
-        }
-        return cardRepository.findCardByAccountId(id);
+    public Optional<List<Card>> findAllByAccountId(long id) {
+
+        return accountService.findById(id)
+                .map(cardRepository::findCardsByAccount)
+                .orElse(Optional.empty());
     }
 
     @Override
-    public Card findById(long id) {
-        return cardRepository.findById(id).orElse(null);
+    public Optional<Card> findById(long id) {
+        return cardRepository.findById(id);
     }
 
     @Override
@@ -47,28 +47,30 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public Card create(Card card, long accountId) {
-        Account account = accountService.findById(accountId);
-        if (account == null) {
-            return null;
-        }
-        card.setAccount(account);
-        return create(card);
+    public Optional<Card> create(Card card, long accountId) {
+
+        return accountService.findById(accountId)
+                .map(account -> {
+                    card.setAccount(account);
+                    return Optional.of(create(card));
+                })
+                .orElse(Optional.empty());
     }
 
     @Override
-    public Card update(long id, Card card) {
-        Card cardFromDb = findById(id);
-        if (cardFromDb == null) {
-            return null;
-        }
-        BeanUtils.copyProperties(card, cardFromDb, "id");
-        return create(cardFromDb);
+    public Optional<Card> update(long id, Card card) {
+
+        return findById(id)
+                .map(cardFromDb -> {
+                    BeanUtils.copyProperties(card, cardFromDb, "id");
+                    return Optional.of(create(cardFromDb));
+                })
+                .orElse(Optional.empty());
     }
 
     @Override
     public boolean delete(long id) {
-        if (findById(id) == null) {
+        if (!findById(id).isPresent()) {
             return false;
         }
         cardRepository.deleteById(id);

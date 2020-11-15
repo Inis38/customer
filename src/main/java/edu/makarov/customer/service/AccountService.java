@@ -5,17 +5,17 @@ import edu.makarov.customer.models.dto.BalanceChangeDTO;
 import edu.makarov.customer.models.dto.MoneyTransactionDTO;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 public interface AccountService extends BaseService<Account> {
 
-    Account create(Account account, long customerId);
+    Optional<Account> create(Account account, long customerId);
 
-    List<Account> findAllByCustomerId(long id);
+    Optional<List<Account>> findAllByCustomerId(long id);
 
-    Account increaseBalance(BalanceChangeDTO balanceChangeDTO);
+    Optional<Account> increaseBalance(BalanceChangeDTO balanceChangeDTO);
 
-    Account reduceBalance(BalanceChangeDTO balanceChangeDTO);
+    Optional<Account> reduceBalance(BalanceChangeDTO balanceChangeDTO);
 
     boolean transferMoney(MoneyTransactionDTO transaction);
 }

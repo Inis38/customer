@@ -15,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,44 +58,45 @@ public class CardServiceImplTest {
     @Test
     public void findAllByAccountIdTest() {
         Mockito.doReturn(Optional.of(account)).when(accountRepository).findById(3L);
+        Mockito.doReturn(Optional.of(new ArrayList())).when(cardRepository).findCardsByAccount(account);
 
-        List<Card> cards = cardService.findAllByAccountId(3);
+        Optional<List<Card>> cards = cardService.findAllByAccountId(3);
 
-        Mockito.verify(cardRepository, Mockito.times(1)).findCardByAccountId(Mockito.anyLong());
+        Mockito.verify(cardRepository, Mockito.times(1)).findCardsByAccount(Mockito.any());
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
-        Assert.assertNotNull(cards);
+        Assert.assertTrue(cards.isPresent());
     }
 
     @Test
     public void findAllByAccountIdFailTest() {
         Mockito.doReturn(Optional.empty()).when(accountRepository).findById(10L);
 
-        List<Card> cards = cardService.findAllByAccountId(10);
+        Optional<List<Card>> cards = cardService.findAllByAccountId(10);
 
-        Mockito.verify(cardRepository, Mockito.times(0)).findCardByAccountId(Mockito.anyLong());
+        Mockito.verify(cardRepository, Mockito.times(0)).findCardsByAccount(Mockito.any());
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
-        Assert.assertNull(cards);
+        Assert.assertFalse(cards.isPresent());
     }
 
     @Test
     public void findByIdTest() {
         Mockito.doReturn(Optional.of(card)).when(cardRepository).findById(3L);
 
-        Card cardFromDb = cardService.findById(3);
+        Optional<Card> cardFromDb = cardService.findById(3);
 
         Mockito.verify(cardRepository, Mockito.times(1)).findById(Mockito.anyLong());
-        Assert.assertNotNull(cardFromDb);
-        Assert.assertEquals(card.getCardNumber(), cardFromDb.getCardNumber());
+        Assert.assertTrue(cardFromDb.isPresent());
+        Assert.assertEquals(card.getCardNumber(), cardFromDb.get().getCardNumber());
     }
 
     @Test
     public void findByIdFailTest() {
         Mockito.doReturn(Optional.empty()).when(cardRepository).findById(10L);
 
-        Card cardFromDb = cardService.findById(10);
+        Optional<Card> cardFromDb = cardService.findById(10);
 
         Mockito.verify(cardRepository, Mockito.times(1)).findById(Mockito.anyLong());
-        Assert.assertNull(cardFromDb);
+        Assert.assertFalse(cardFromDb.isPresent());
     }
 
     @Test
@@ -114,13 +116,13 @@ public class CardServiceImplTest {
         Mockito.doReturn(Optional.of(account)).when(accountRepository).findById(10L);
         Mockito.doReturn(card).when(cardRepository).save(card);
 
-        Card cardFromDb = cardService.create(card, 10);
+        Optional<Card> cardFromDb = cardService.create(card, 10);
 
         Mockito.verify(cardRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
-        Assert.assertNotNull(cardFromDb);
-        Assert.assertEquals(card.getCardNumber(), cardFromDb.getCardNumber());
-        Assert.assertNotNull(cardFromDb.getAccount().getBalance());
+        Assert.assertTrue(cardFromDb.isPresent());
+        Assert.assertEquals(card.getCardNumber(), cardFromDb.get().getCardNumber());
+        Assert.assertNotNull(cardFromDb.get().getAccount().getBalance());
     }
 
     @Test
@@ -128,11 +130,11 @@ public class CardServiceImplTest {
         Mockito.doReturn(Optional.empty()).when(accountRepository).findById(10L);
         Mockito.doReturn(card).when(cardRepository).save(card);
 
-        Card cardFromDb = cardService.create(card, 10);
+        Optional<Card> cardFromDb = cardService.create(card, 10);
 
         Mockito.verify(cardRepository, Mockito.times(0)).save(Mockito.any());
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.anyLong());
-        Assert.assertNull(cardFromDb);
+        Assert.assertFalse(cardFromDb.isPresent());
     }
 
     @Test
@@ -141,11 +143,12 @@ public class CardServiceImplTest {
         Mockito.doReturn(Optional.of(card)).when(cardRepository).findById(10L);
         Mockito.doReturn(card).when(cardRepository).save(card);
 
-        Card cardFromDb = cardService.update(10, card);
+        Optional<Card> cardFromDb = cardService.update(10, card);
 
         Mockito.verify(cardRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(cardRepository, Mockito.times(1)).save(Mockito.any());
-        Assert.assertEquals(card.getId(), cardFromDb.getId());
+        Assert.assertTrue(cardFromDb.isPresent());
+        Assert.assertEquals(card.getId(), cardFromDb.get().getId());
     }
 
     @Test
@@ -153,11 +156,11 @@ public class CardServiceImplTest {
         Mockito.doReturn(Optional.empty()).when(cardRepository).findById(10L);
         Mockito.doReturn(card).when(cardRepository).save(card);
 
-        Card cardFromDb = cardService.update(10, card);
+        Optional<Card> cardFromDb = cardService.update(10, card);
 
         Mockito.verify(cardRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(cardRepository, Mockito.times(0)).save(Mockito.any());
-        Assert.assertNull(cardFromDb);
+        Assert.assertFalse(cardFromDb.isPresent());
     }
 
     @Test

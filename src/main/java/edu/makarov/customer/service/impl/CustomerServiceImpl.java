@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -25,8 +26,8 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Customer findById(long id) {
-        return customerRepository.findById(id).orElse(null);
+    public Optional<Customer> findById(long id) {
+        return customerRepository.findById(id);
     }
 
     @Override
@@ -35,18 +36,18 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Customer update(long id, Customer customer) {
-        Customer customerFromDb = findById(id);
-        if (customerFromDb == null) {
-            return null;
-        }
-        BeanUtils.copyProperties(customer, customerFromDb, "id");
-        return create(customerFromDb);
+    public Optional<Customer> update(long id, Customer customer) {
+        return findById(id)
+                .map(customerFromDb -> {
+                    BeanUtils.copyProperties(customer, customerFromDb, "id");
+                    return Optional.of(create(customerFromDb));
+                })
+                .orElse(Optional.empty());
     }
 
     @Override
     public boolean delete(long id) {
-        if (findById(id) == null) {
+        if (!findById(id).isPresent()) {
             return false;
         }
         customerRepository.deleteById(id);

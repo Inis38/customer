@@ -51,7 +51,7 @@ public class CustomerServiceImplTest {
     public void findByIdTest() {
         Mockito.doReturn(Optional.of(customer)).when(customerRepository).findById(3L);
 
-        Customer customerFromDb = customerService.findById(3);
+        Customer customerFromDb = customerService.findById(3).get();
 
         Mockito.verify(customerRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Assert.assertNotNull(customerFromDb);
@@ -62,10 +62,10 @@ public class CustomerServiceImplTest {
     public void findByIdFailTest() {
         Mockito.doReturn(Optional.empty()).when(customerRepository).findById(3L);
 
-        Customer customerFromDb = customerService.findById(3);
+        Optional<Customer> customerFromDb = customerService.findById(3);
 
         Mockito.verify(customerRepository, Mockito.times(1)).findById(Mockito.anyLong());
-        Assert.assertNull(customerFromDb);
+        Assert.assertFalse(customerFromDb.isPresent());
     }
 
     @Test
@@ -85,7 +85,7 @@ public class CustomerServiceImplTest {
         Mockito.doReturn(Optional.of(customer)).when(customerRepository).findById(10L);
         Mockito.doReturn(customer).when(customerRepository).save(customer);
 
-        Customer customerFromDb = customerService.update(10, customer);
+        Customer customerFromDb = customerService.update(10, customer).get();
 
         Mockito.verify(customerRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(customerRepository, Mockito.times(1)).save(Mockito.any());
@@ -97,11 +97,11 @@ public class CustomerServiceImplTest {
         Mockito.doReturn(Optional.empty()).when(customerRepository).findById(10L);
         Mockito.doReturn(customer).when(customerRepository).save(customer);
 
-        Customer customerFromDb = customerService.update(10, customer);
+        Optional<Customer> customerFromDb = customerService.update(10, customer);
 
         Mockito.verify(customerRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(customerRepository, Mockito.times(0)).save(Mockito.any());
-        Assert.assertNull(customerFromDb);
+        Assert.assertFalse(customerFromDb.isPresent());
     }
 
     @Test
