@@ -9,10 +9,6 @@ import java.util.Optional;
 
 public interface AccountService extends BaseService<Account> {
 
-    Optional<Account> findById(long id);
-
-    Optional<Account> update(long id, Account model);
-
     Optional<Account> create(Account account, long customerId);
 
     Optional<List<Account>> findAllByCustomerId(long id);

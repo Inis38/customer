@@ -1,6 +1,5 @@
 package edu.makarov.customer.service;
 
-import edu.makarov.customer.models.Customer;
 import edu.makarov.customer.models.Subscription;
 import edu.makarov.customer.repository.SubscriptionRepository;
 import org.junit.Assert;
@@ -46,21 +45,21 @@ public class SubscriptionServiceImplTest {
     public void findByIdTest() {
         Mockito.doReturn(Optional.of(subscription)).when(subscriptionRepository).findById(3L);
 
-        Subscription subscriptionFromDb = subscriptionService.findById(3);
+        Optional<Subscription> subscriptionFromDb = subscriptionService.findById(3);
 
         Mockito.verify(subscriptionRepository, Mockito.times(1)).findById(Mockito.anyLong());
-        Assert.assertNotNull(subscriptionFromDb);
-        Assert.assertEquals(subscription.getName(), subscriptionFromDb.getName());
+        Assert.assertTrue(subscriptionFromDb.isPresent());
+        Assert.assertEquals(subscription.getName(), subscriptionFromDb.get().getName());
     }
 
     @Test
     public void findByIdFailTest() {
         Mockito.doReturn(Optional.empty()).when(subscriptionRepository).findById(3L);
 
-        Subscription subscriptionFromDb = subscriptionService.findById(3);
+        Optional<Subscription> subscriptionFromDb = subscriptionService.findById(3);
 
         Mockito.verify(subscriptionRepository, Mockito.times(1)).findById(Mockito.anyLong());
-        Assert.assertNull(subscriptionFromDb);
+        Assert.assertFalse(subscriptionFromDb.isPresent());
     }
 
     @Test
@@ -80,11 +79,12 @@ public class SubscriptionServiceImplTest {
         Mockito.doReturn(Optional.of(subscription)).when(subscriptionRepository).findById(10L);
         Mockito.doReturn(subscription).when(subscriptionRepository).save(subscription);
 
-        Subscription subscriptionFromDb = subscriptionService.update(10, subscription);
+        Optional<Subscription> subscriptionFromDb = subscriptionService.update(10, subscription);
 
         Mockito.verify(subscriptionRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(subscriptionRepository, Mockito.times(1)).save(Mockito.any());
-        Assert.assertEquals(subscription.getId(), subscriptionFromDb.getId());
+        Assert.assertTrue(subscriptionFromDb.isPresent());
+        Assert.assertEquals(subscription.getId(), subscriptionFromDb.get().getId());
     }
 
     @Test
@@ -92,11 +92,11 @@ public class SubscriptionServiceImplTest {
         Mockito.doReturn(Optional.empty()).when(subscriptionRepository).findById(10L);
         Mockito.doReturn(subscription).when(subscriptionRepository).save(subscription);
 
-        Subscription subscriptionFromDb = subscriptionService.update(10, subscription);
+        Optional<Subscription> subscriptionFromDb = subscriptionService.update(10, subscription);
 
         Mockito.verify(subscriptionRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(subscriptionRepository, Mockito.times(0)).save(Mockito.any());
-        Assert.assertNull(subscriptionFromDb);
+        Assert.assertFalse(subscriptionFromDb.isPresent());
     }
 
     @Test

@@ -7,10 +7,6 @@ import java.util.Optional;
 
 public interface CardService extends BaseService<Card> {
 
-    Optional<Card> findById(long id);
-
-    Optional<Card> update(long id, Card model);
-
     Optional<List<Card>> findAllByAccountId(long id);
 
     Optional<Card> create(Card account, long customerId);

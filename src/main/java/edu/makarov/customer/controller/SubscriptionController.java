@@ -1,5 +1,7 @@
 package edu.makarov.customer.controller;
 
+import edu.makarov.customer.exception.BadRequestException;
+import edu.makarov.customer.exception.RecordNotFoundException;
 import edu.makarov.customer.models.Subscription;
 import edu.makarov.customer.service.SubscriptionService;
 import io.swagger.annotations.ApiOperation;
@@ -32,11 +34,10 @@ public class SubscriptionController {
     @ApiOperation(value = "Fetch Subscription by Id", response = Subscription.class)
     @RequestMapping(value = "{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Subscription> findById(@PathVariable("id") long id) {
-        Subscription subscription = subscriptionService.findById(id);
-        if (subscription == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(subscription, HttpStatus.OK);
+
+        return subscriptionService.findById(id)
+                .map(subscription -> new ResponseEntity<>(subscription, HttpStatus.OK))
+                .orElseThrow(() -> new RecordNotFoundException("Subscription with id '" + id + "' not found"));
     }
 
     @ApiOperation(value = "Insert Subscription Record", response = Subscription.class)
@@ -48,18 +49,17 @@ public class SubscriptionController {
     @ApiOperation(value = "Update Subscription Details", response = Subscription.class)
     @RequestMapping(value = "{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Subscription> update(@PathVariable("id") long id, @RequestBody Subscription subscription) {
-        Subscription subscriptionFromDb = subscriptionService.update(id, subscription);
-        if (subscriptionFromDb == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(subscriptionFromDb, HttpStatus.OK);
+
+        return subscriptionService.update(id, subscription)
+                .map(subscriptionFromDb -> new ResponseEntity<>(subscriptionFromDb, HttpStatus.OK))
+                .orElseThrow(() -> new BadRequestException("Failed to update information for subscription with id '" + id + "'"));
     }
 
     @ApiOperation(value = "Delete a Subscription")
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Subscription> delete(@PathVariable("id") long id) {
         if (!subscriptionService.delete(id)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Failed to delete subscription with id '" + id + "'");
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }

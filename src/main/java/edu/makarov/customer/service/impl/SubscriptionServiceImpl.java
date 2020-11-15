@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SubscriptionServiceImpl implements SubscriptionService {
@@ -25,8 +26,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public Subscription findById(long id) {
-        return subscriptionRepository.findById(id).orElse(null);
+    public Optional<Subscription> findById(long id) {
+        return subscriptionRepository.findById(id);
     }
 
     @Override
@@ -35,18 +36,19 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public Subscription update(long id, Subscription subscription) {
-        Subscription subscriptionFromDb = findById(id);
-        if (subscriptionFromDb == null) {
-            return null;
-        }
-        BeanUtils.copyProperties(subscription, subscriptionFromDb, "id");
-        return create(subscriptionFromDb);
+    public Optional<Subscription> update(long id, Subscription subscription) {
+
+        return findById(id)
+                .map(subscriptionFromDb -> {
+                    BeanUtils.copyProperties(subscription, subscriptionFromDb, "id");
+                    return Optional.of(create(subscriptionFromDb));
+                })
+                .orElse(Optional.empty());
     }
 
     @Override
     public boolean delete(long id) {
-        if (findById(id) == null) {
+        if (!findById(id).isPresent()) {
             return false;
         }
         subscriptionRepository.deleteById(id);

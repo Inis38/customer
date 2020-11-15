@@ -85,7 +85,7 @@ public class CardServiceImplTest {
         Optional<Card> cardFromDb = cardService.findById(3);
 
         Mockito.verify(cardRepository, Mockito.times(1)).findById(Mockito.anyLong());
-        Assert.assertNotNull(cardFromDb);
+        Assert.assertTrue(cardFromDb.isPresent());
         Assert.assertEquals(card.getCardNumber(), cardFromDb.get().getCardNumber());
     }
 
@@ -147,6 +147,7 @@ public class CardServiceImplTest {
 
         Mockito.verify(cardRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(cardRepository, Mockito.times(1)).save(Mockito.any());
+        Assert.assertTrue(cardFromDb.isPresent());
         Assert.assertEquals(card.getId(), cardFromDb.get().getId());
     }
 
