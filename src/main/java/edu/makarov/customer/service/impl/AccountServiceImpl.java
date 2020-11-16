@@ -7,6 +7,8 @@ import edu.makarov.customer.models.dto.MoneyTransactionDTO;
 import edu.makarov.customer.repository.AccountRepository;
 import edu.makarov.customer.service.AccountService;
 import edu.makarov.customer.service.CustomerService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import java.util.Optional;
 @Service
 public class AccountServiceImpl implements AccountService {
 
+    private static final Logger logger = LogManager.getLogger(AccountServiceImpl.class);
     private final AccountRepository accountRepository;
     private final CustomerService customerService;
 
@@ -36,6 +39,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Optional<List<Account>> findAllByCustomerId(long id) {
 
+        logger.info("Запрос всех счетов для клиента с id {}", id);
         return customerService.findById(id)
                 .map(accountRepository::findAccountsByCustomer)
                 .orElse(Optional.empty());
@@ -43,11 +47,13 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Optional<Account> findById(long id) {
+        logger.info("Запрос инфмормации о счете с id {}", id);
         return accountRepository.findById(id);
     }
 
     @Override
     public Account create(Account account) {
+        logger.info("Сохраняем счет для клиента с id {}, счет - {}", account.getCustomer().getId(), account);
         return accountRepository.save(account);
     }
 
@@ -64,7 +70,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Optional<Account> update(long id, Account account) {
-
+        logger.info("Обновляем информауию о счете с id {}, счет - {}", id, account);
         return findById(id)
                 .map(accountFromDb -> {
                     BeanUtils.copyProperties(account, accountFromDb, "id");
@@ -76,24 +82,28 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public boolean delete(long id) {
         if (!findById(id).isPresent()) {
+            logger.warn("Не удалось удалить счет с id {}", id);
             return false;
         }
+        logger.info("Счет с id {} удален", id);
         accountRepository.deleteById(id);
         return true;
     }
 
     @Override
     public Optional<Account> increaseBalance(BalanceChangeDTO balanceChangeDTO) {
+
         long id = balanceChangeDTO.getId();
         BigDecimal sum = balanceChangeDTO.getSum().setScale(2, BigDecimal.ROUND_DOWN);
         if (id == 0 || sum == null || sum.floatValue() < 0) {
+            logger.warn("Попытка увеличить баланс счета. Некорректные данные. Операция отменена.");
             return Optional.empty();
         }
         return increaseBalance(id, sum);
     }
 
     private Optional<Account> increaseBalance(long id, BigDecimal sum) {
-
+        logger.info("Увеличиваем баланс для счета с id {} на сумму {}", id, sum);
         return findById(id)
                 .map(account -> {
                     account.setBalance(account.getBalance().add(sum));
@@ -107,16 +117,18 @@ public class AccountServiceImpl implements AccountService {
         long id = balanceChangeDTO.getId();
         BigDecimal sum = balanceChangeDTO.getSum().setScale(2, BigDecimal.ROUND_DOWN);
         if (id == 0 || sum == null || sum.floatValue() < 0) {
+            logger.warn("Попытка уменьшить баланс счета. Некорректные данные. Операция отменена. id - {}, sum = {}", id, sum);
             return Optional.empty();
         }
         return reduceBalance(id, sum);
     }
 
     private Optional<Account> reduceBalance(long id, BigDecimal sum) {
-
+        logger.info("Уменьшаем баланс для счета с id {} на сумму {}", id, sum);
         return (Optional<Account>) findById(id)
                 .map(account -> {
                     if (account.getBalance().floatValue() < sum.floatValue()) {
+                        logger.warn("На балансе счета с id {} недостаточно средств, операция отменена.", id);
                         return Optional.empty();
                     }
                     account.setBalance(account.getBalance().subtract(sum));
@@ -135,12 +147,14 @@ public class AccountServiceImpl implements AccountService {
         Optional<Account> accountFrom = findById(from);
         Optional<Account> accountTo = findById(to);
         if (!accountFrom.isPresent() || !accountTo.isPresent()) {
+            logger.warn("Попытка перевода денежных средств со счета #{} на счет #{}. Некорректные данные. Операция отменена.", from, to);
             return false;
         }
         if (!reduceBalance(accountFrom.get().getId(), sum).isPresent()) {
             return false;
         }
         increaseBalance(accountTo.get().getId(), sum);
+        logger.warn("Денежные средства переведены со счета #{} на счет #{}", from, to);
         return true;
     }
 }

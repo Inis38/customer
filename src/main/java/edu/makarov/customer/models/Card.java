@@ -3,10 +3,7 @@ package edu.makarov.customer.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -17,6 +14,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @ApiModel(description = "Card Model")
+@ToString(of = { "id", "cardNumber"})
 public class Card {
 
     @Id

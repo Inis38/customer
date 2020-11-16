@@ -15,6 +15,7 @@ import java.util.Collection;
 @Entity
 @Table(name = "Account")
 @ApiModel(description = "Account Model")
+@ToString(of = { "id", "accountNumber", "balance"})
 public class Account {
 
     @Id

@@ -4,6 +4,8 @@ import edu.makarov.customer.models.Card;
 import edu.makarov.customer.repository.CardRepository;
 import edu.makarov.customer.service.AccountService;
 import edu.makarov.customer.service.CardService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import java.util.Optional;
 @Service
 public class CardServiceImpl implements CardService {
 
+    private static final Logger logger = LogManager.getLogger(CardServiceImpl.class);
     private final CardRepository cardRepository;
     private final AccountService accountService;
 
@@ -30,7 +33,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public Optional<List<Card>> findAllByAccountId(long id) {
-
+        logger.info("Запрос всех карт для счета с id {}", id);
         return accountService.findById(id)
                 .map(cardRepository::findCardsByAccount)
                 .orElse(Optional.empty());
@@ -38,11 +41,13 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public Optional<Card> findById(long id) {
+        logger.info("Запрос информации о карте с id {}", id);
         return cardRepository.findById(id);
     }
 
     @Override
     public Card create(Card card) {
+        logger.info("Сохраняем карту для аккаунта с id {}, {}", card.getAccount().getId(), card);
         return cardRepository.save(card);
     }
 
@@ -59,7 +64,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public Optional<Card> update(long id, Card card) {
-
+        logger.info("Обновляем информацию о карте для аккаунта с id {}, {}", card.getAccount().getId(), card);
         return findById(id)
                 .map(cardFromDb -> {
                     BeanUtils.copyProperties(card, cardFromDb, "id");
@@ -71,8 +76,10 @@ public class CardServiceImpl implements CardService {
     @Override
     public boolean delete(long id) {
         if (!findById(id).isPresent()) {
+            logger.warn("Не удалось удлить карту с id {}", id);
             return false;
         }
+        logger.info("Карта с id {} удалена", id);
         cardRepository.deleteById(id);
         return true;
     }

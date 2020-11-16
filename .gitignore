@@ -1,10 +1,11 @@
 .idea/
+.logs/
 target/
 =======
 # Default ignored files
 /shelf/
 /.idea/workspace.xml
-.idea/
+/.logs/propertieslogs.log
 *.iml
 /target/
 
