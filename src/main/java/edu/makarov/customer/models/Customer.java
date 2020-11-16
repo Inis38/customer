@@ -15,6 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @ApiModel(description = "Customer Model")
+@ToString(of = { "id", "fullName", "documentNumber"})
 public class Customer {
 
     @Id

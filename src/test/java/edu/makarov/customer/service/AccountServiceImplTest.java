@@ -40,13 +40,14 @@ public class AccountServiceImplTest {
 
     @Before
     public void initModels() {
-        account = new Account();
-        account.setAccountNumber("404000000000000000");
-        account.setBalance(new BigDecimal(15000));
-
         customer = new Customer();
         customer.setFullName("Иванов");
         customer.setDocumentNumber("12345");
+
+        account = new Account();
+        account.setAccountNumber("404000000000000000");
+        account.setBalance(new BigDecimal(15000));
+        account.setCustomer(customer);
     }
 
     @Test
@@ -243,10 +244,12 @@ public class AccountServiceImplTest {
         Account to = new Account();
         to.setId(1);
         to.setBalance(new BigDecimal("1000"));
+        to.setCustomer(customer);
 
         Account from = new Account();
         from.setId(2);
         from.setBalance(new BigDecimal("1000"));
+        from.setCustomer(customer);
 
         Mockito.doReturn(Optional.of(to)).when(accountRepository).findById(1L);
         Mockito.doReturn(Optional.of(from)).when(accountRepository).findById(2L);

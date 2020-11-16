@@ -5,6 +5,8 @@ import edu.makarov.customer.exception.RecordNotFoundException;
 import edu.makarov.customer.models.Customer;
 import edu.makarov.customer.service.CustomerService;
 import io.swagger.annotations.ApiOperation;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/customers")
@@ -44,6 +45,7 @@ public class CustomerController {
     @ApiOperation(value = "Insert Customer Record", response = Customer.class)
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Customer> create(@RequestBody Customer customer) {
+
         return new ResponseEntity<>(customerService.create(customer), HttpStatus.OK);
     }
 
