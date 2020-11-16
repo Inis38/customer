@@ -202,4 +202,49 @@ public class CustomerServiceImplTest {
 
         Assert.assertFalse(subscriptionsFromDb.isPresent());
     }
+
+    @Test
+    public void deleteSubscriptionTest() {
+        Subscription subscription = new Subscription();
+        subscription.setId(1);
+
+        Set<Subscription> set = new HashSet<>();
+        set.add(subscription);
+        customer.setSubscriptions(set);
+
+        Mockito.doReturn(Optional.of(customer)).when(customerRepository).findById(Mockito.anyLong());
+        Mockito.doReturn(customer).when(customerRepository).save(Mockito.any());
+        Mockito.doReturn(Optional.of(subscription)).when(subscriptionRepository).findById(Mockito.anyLong());
+
+        Optional<Set<Subscription>> subscriptionsFromDb = customerService.deleteSubscription(new SubscriptionManagementDTO(1, 1));
+
+        Mockito.verify(customerRepository, Mockito.times(1)).findById(Mockito.anyLong());
+        Mockito.verify(customerRepository, Mockito.times(1)).save(Mockito.any());
+        Mockito.verify(subscriptionRepository, Mockito.times(1)).findById(Mockito.anyLong());
+
+        Assert.assertTrue(subscriptionsFromDb.isPresent());
+        Assert.assertEquals(subscriptionsFromDb.get().size(), 0);
+    }
+
+    @Test
+    public void deleteSubscriptionFailTest() {
+        Subscription subscription = new Subscription();
+        subscription.setId(1);
+
+        Set<Subscription> set = new HashSet<>();
+        set.add(subscription);
+        customer.setSubscriptions(set);
+
+        Mockito.doReturn(Optional.of(customer)).when(customerRepository).findById(Mockito.anyLong());
+        Mockito.doReturn(customer).when(customerRepository).save(Mockito.any());
+        Mockito.doReturn(Optional.empty()).when(subscriptionRepository).findById(Mockito.anyLong());
+
+        Optional<Set<Subscription>> subscriptionsFromDb = customerService.deleteSubscription(new SubscriptionManagementDTO(1, 2));
+
+        Mockito.verify(customerRepository, Mockito.times(1)).findById(Mockito.anyLong());
+        Mockito.verify(customerRepository, Mockito.times(0)).save(Mockito.any());
+        Mockito.verify(subscriptionRepository, Mockito.times(1)).findById(Mockito.anyLong());
+
+        Assert.assertFalse(subscriptionsFromDb.isPresent());
+    }
 }

@@ -13,4 +13,6 @@ public interface CustomerService extends BaseService<Customer> {
     Optional<List<Subscription>> findSubscriptions(long customerId);
 
     Optional<Set<Subscription>> addSubscription(SubscriptionManagementDTO subDto);
+
+    Optional<Set<Subscription>> deleteSubscription(SubscriptionManagementDTO subDto);
 }

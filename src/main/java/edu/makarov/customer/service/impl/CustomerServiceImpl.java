@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.*;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -79,7 +80,17 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Optional<Set<Subscription>> addSubscription(SubscriptionManagementDTO subDto) {
+        logger.info("Клиенту с id {} добавляем подписку с id {}", subDto.getCustomerId(), subDto.getSubscriptionId());
+        return manageSubscriptions(subDto, ((subscription, subscriptions) -> subscriptions.add(subscription)));
+    }
 
+    @Override
+    public Optional<Set<Subscription>> deleteSubscription(SubscriptionManagementDTO subDto) {
+        logger.info("Удалем подписку с id {} у клиента с id {}", subDto.getSubscriptionId(), subDto.getCustomerId());
+        return manageSubscriptions(subDto, ((subscription, subscriptions) -> subscriptions.remove(subscription)));
+    }
+
+    private Optional<Set<Subscription>> manageSubscriptions(SubscriptionManagementDTO subDto, BiConsumer<Subscription, Set<Subscription>> manager) {
         Optional<Customer> customer = findById(subDto.getCustomerId());
         Optional<Subscription> subscription = subscriptionRepository.findById(subDto.getSubscriptionId());
         if (!customer.isPresent() || !subscription.isPresent()) {
@@ -88,8 +99,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
         Customer customerFromDb = customer.get();
         Set<Subscription> subscriptionsFromDb = customerFromDb.getSubscriptions();
-        subscriptionsFromDb.add(subscription.get());
-        logger.info("Клиенту с id {} добавлена подписка с id {}", subDto.getCustomerId(), subDto.getSubscriptionId());
+        manager.accept(subscription.get(), subscriptionsFromDb);
 
         return Optional.of(create(customerFromDb).getSubscriptions());
     }

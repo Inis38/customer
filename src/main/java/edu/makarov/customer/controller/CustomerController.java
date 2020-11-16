@@ -78,10 +78,19 @@ public class CustomerController {
 
     @ApiOperation(value = "Add Subscription")
     @RequestMapping(value = "{id}/subscriptions", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Set<Subscription>> addSubscriptions(@PathVariable("id") long id, @RequestBody SubscriptionManagementDTO subscription) {
+    public ResponseEntity<Set<Subscription>> addSubscription(@PathVariable("id") long id, @RequestBody SubscriptionManagementDTO subscription) {
         subscription.setCustomerId(id);
         return customerService.addSubscription(subscription)
                 .map(subscriptions -> new ResponseEntity<>(subscriptions, HttpStatus.OK))
                 .orElseThrow(() -> new BadRequestException("Failed to add subscription"));
+    }
+
+    @ApiOperation(value = "Delete Subscription")
+    @RequestMapping(value = "{id}/subscriptions", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Set<Subscription>> delSubscription(@PathVariable("id") long id, @RequestBody SubscriptionManagementDTO subscription) {
+        subscription.setCustomerId(id);
+        return customerService.deleteSubscription(subscription)
+                .map(subscriptions -> new ResponseEntity<>(subscriptions, HttpStatus.OK))
+                .orElseThrow(() -> new BadRequestException("Failed to delete subscription"));
     }
 }
