@@ -2,6 +2,7 @@ package edu.makarov.customer.service;
 
 import edu.makarov.customer.models.Customer;
 import edu.makarov.customer.models.Subscription;
+import edu.makarov.customer.models.dto.SubscriptionManagementDTO;
 import edu.makarov.customer.repository.CustomerRepository;
 import edu.makarov.customer.repository.SubscriptionRepository;
 import org.junit.Assert;
@@ -14,9 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -36,6 +35,7 @@ public class CustomerServiceImplTest {
     @Before
     public void initModels() {
         customer = new Customer();
+        customer.setId(1);
         customer.setFullName("Иванов");
         customer.setDocumentNumber("12345");
     }
@@ -152,5 +152,54 @@ public class CustomerServiceImplTest {
         Mockito.verify(customerRepository, Mockito.times(1)).findById(Mockito.anyLong());
         Mockito.verify(subscriptionRepository, Mockito.times(1)).findSubscriptionsByCustomers(Mockito.any());
         Assert.assertFalse(subscriptions.isPresent());
+    }
+
+    @Test
+    public void addSubscriptionTest() {
+        Subscription subscription1 = new Subscription();
+        subscription1.setId(1);
+        Subscription subscription2 = new Subscription();
+        subscription2.setId(2);
+
+        Set<Subscription> set = new HashSet<>();
+        set.add(subscription1);
+        customer.setSubscriptions(set);
+
+        Mockito.doReturn(Optional.of(customer)).when(customerRepository).findById(Mockito.anyLong());
+        Mockito.doReturn(customer).when(customerRepository).save(Mockito.any());
+        Mockito.doReturn(Optional.of(subscription2)).when(subscriptionRepository).findById(Mockito.anyLong());
+
+        Optional<Set<Subscription>> subscriptionsFromDb = customerService.addSubscription(new SubscriptionManagementDTO(1, 2));
+
+        Mockito.verify(customerRepository, Mockito.times(1)).findById(Mockito.anyLong());
+        Mockito.verify(customerRepository, Mockito.times(1)).save(Mockito.any());
+        Mockito.verify(subscriptionRepository, Mockito.times(1)).findById(Mockito.anyLong());
+
+        Assert.assertTrue(subscriptionsFromDb.isPresent());
+        Assert.assertEquals(subscriptionsFromDb.get().size(), 2);
+    }
+
+    @Test
+    public void addSubscriptionFailTest() {
+        Subscription subscription1 = new Subscription();
+        subscription1.setId(1);
+        Subscription subscription2 = new Subscription();
+        subscription2.setId(2);
+
+        Set<Subscription> set = new HashSet<>();
+        set.add(subscription1);
+        customer.setSubscriptions(set);
+
+        Mockito.doReturn(Optional.of(customer)).when(customerRepository).findById(Mockito.anyLong());
+        Mockito.doReturn(customer).when(customerRepository).save(Mockito.any());
+        Mockito.doReturn(Optional.empty()).when(subscriptionRepository).findById(Mockito.anyLong());
+
+        Optional<Set<Subscription>> subscriptionsFromDb = customerService.addSubscription(new SubscriptionManagementDTO(1, 2));
+
+        Mockito.verify(customerRepository, Mockito.times(1)).findById(Mockito.anyLong());
+        Mockito.verify(customerRepository, Mockito.times(0)).save(Mockito.any());
+        Mockito.verify(subscriptionRepository, Mockito.times(1)).findById(Mockito.anyLong());
+
+        Assert.assertFalse(subscriptionsFromDb.isPresent());
     }
 }

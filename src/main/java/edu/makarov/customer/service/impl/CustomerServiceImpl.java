@@ -2,6 +2,7 @@ package edu.makarov.customer.service.impl;
 
 import edu.makarov.customer.models.Customer;
 import edu.makarov.customer.models.Subscription;
+import edu.makarov.customer.models.dto.SubscriptionManagementDTO;
 import edu.makarov.customer.repository.CustomerRepository;
 import edu.makarov.customer.repository.SubscriptionRepository;
 import edu.makarov.customer.service.CustomerService;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -41,7 +43,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer create(Customer customer) {
-        logger.info("Новый клиент - {}", customer);
+        logger.info("Сохраняем клиента - {}", customer);
         return customerRepository.save(customer);
     }
 
@@ -73,5 +75,22 @@ public class CustomerServiceImpl implements CustomerService {
         return findById(customerId)
                 .map(subscriptionRepository::findSubscriptionsByCustomers)
                 .orElse(Optional.empty());
+    }
+
+    @Override
+    public Optional<Set<Subscription>> addSubscription(SubscriptionManagementDTO subDto) {
+
+        Optional<Customer> customer = findById(subDto.getCustomerId());
+        Optional<Subscription> subscription = subscriptionRepository.findById(subDto.getSubscriptionId());
+        if (!customer.isPresent() || !subscription.isPresent()) {
+            logger.warn("Клиента с id {} или подписки с id {} не существует", subDto.getCustomerId(), subDto.getSubscriptionId());
+            return Optional.empty();
+        }
+        Customer customerFromDb = customer.get();
+        Set<Subscription> subscriptionsFromDb = customerFromDb.getSubscriptions();
+        subscriptionsFromDb.add(subscription.get());
+        logger.info("Клиенту с id {} добавлена подписка с id {}", subDto.getCustomerId(), subDto.getSubscriptionId());
+
+        return Optional.of(create(customerFromDb).getSubscriptions());
     }
 }

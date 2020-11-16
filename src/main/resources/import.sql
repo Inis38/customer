@@ -14,6 +14,7 @@ insert into card (card_number, account_id) values ('8742 3981 2751 6253', 3);
 insert into card (card_number, account_id) values ('8972 3461 2837 4597', 4);
 insert into subscription (subscription_name) values ('Услуга оповещения об операциях');
 insert into subscription (subscription_name) values ('Услуга повышенный кэшбэк');
+insert into subscription (subscription_name) values ('Услуга приоритетного обслуживания');
 insert into customer_subscription (customer_id, subscription_id) values (1, 1);
 insert into customer_subscription (customer_id, subscription_id) values (1, 2);
 insert into customer_subscription (customer_id, subscription_id) values (2, 1);
