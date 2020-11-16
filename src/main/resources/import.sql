@@ -1,6 +1,7 @@
 insert into customer (document_number, full_name) values ('1111 223344', 'Иванов Иван Иванович');
 insert into customer (document_number, full_name) values ('9922 762811', 'Петров Леонид Сергеевич');
 insert into customer (document_number, full_name) values ('2987 312761', 'Сидоров Петр Александрович');
+insert into customer (document_number, full_name) values ('7687 198712', 'Васильев Роман Петрович');
 insert into account (account_number, balance, customer_id) values ('456333999929992000', 5000, 1);
 insert into account (account_number, balance, customer_id) values ('429310981298317654', 10000, 1);
 insert into account (account_number, balance, customer_id) values ('481763198712398764', 20000, 2);

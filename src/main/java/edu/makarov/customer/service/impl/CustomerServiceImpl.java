@@ -1,8 +1,9 @@
 package edu.makarov.customer.service.impl;
 
-import edu.makarov.customer.controller.CustomerController;
 import edu.makarov.customer.models.Customer;
+import edu.makarov.customer.models.Subscription;
 import edu.makarov.customer.repository.CustomerRepository;
+import edu.makarov.customer.repository.SubscriptionRepository;
 import edu.makarov.customer.service.CustomerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,10 +20,12 @@ public class CustomerServiceImpl implements CustomerService {
     private static final Logger logger = LogManager.getLogger(CustomerServiceImpl.class);
 
     private final CustomerRepository customerRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     @Autowired
-    public CustomerServiceImpl(CustomerRepository customerRepository) {
+    public CustomerServiceImpl(CustomerRepository customerRepository, SubscriptionRepository subscriptionRepository) {
         this.customerRepository = customerRepository;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     @Override
@@ -62,5 +65,13 @@ public class CustomerServiceImpl implements CustomerService {
         logger.warn("Клиент с id {} удален", id);
         customerRepository.deleteById(id);
         return true;
+    }
+
+    @Override
+    public Optional<List<Subscription>> findSubscriptions(long customerId) {
+        logger.info("Запрос списка подписок клиента с id {}", customerId);
+        return findById(customerId)
+                .map(subscriptionRepository::findSubscriptionsByCustomers)
+                .orElse(Optional.empty());
     }
 }

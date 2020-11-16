@@ -3,10 +3,9 @@ package edu.makarov.customer.controller;
 import edu.makarov.customer.exception.BadRequestException;
 import edu.makarov.customer.exception.RecordNotFoundException;
 import edu.makarov.customer.models.Customer;
+import edu.makarov.customer.models.Subscription;
 import edu.makarov.customer.service.CustomerService;
 import io.swagger.annotations.ApiOperation;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -65,5 +64,13 @@ public class CustomerController {
             throw new BadRequestException("Failed to delete customer with id '" + id + "'");
         }
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Find Subscriptions")
+    @RequestMapping(value = "{id}/subscriptions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Subscription>> findSubscriptions(@PathVariable("id") long id) {
+        return customerService.findSubscriptions(id)
+                .map(subscriptions -> new ResponseEntity<>(subscriptions, HttpStatus.OK))
+                .orElseThrow(() -> new RecordNotFoundException("This client has no subscriptions or a client with this id '" + id + "' does not exist"));
     }
 }
