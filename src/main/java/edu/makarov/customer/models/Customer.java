@@ -8,7 +8,7 @@ import lombok.*;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "Customer")
@@ -41,5 +41,5 @@ public class Customer {
             name = "customer_subscription",
             joinColumns = @JoinColumn(name = "customer_id"),
             inverseJoinColumns = @JoinColumn(name = "subscription_id"))
-    List<Subscription> subscriptions;
+    private Set<Subscription> subscriptions;
 }

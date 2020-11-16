@@ -1,6 +1,7 @@
 insert into customer (document_number, full_name) values ('1111 223344', 'Иванов Иван Иванович');
 insert into customer (document_number, full_name) values ('9922 762811', 'Петров Леонид Сергеевич');
 insert into customer (document_number, full_name) values ('2987 312761', 'Сидоров Петр Александрович');
+insert into customer (document_number, full_name) values ('7687 198712', 'Васильев Роман Петрович');
 insert into account (account_number, balance, customer_id) values ('456333999929992000', 5000, 1);
 insert into account (account_number, balance, customer_id) values ('429310981298317654', 10000, 1);
 insert into account (account_number, balance, customer_id) values ('481763198712398764', 20000, 2);
@@ -13,6 +14,7 @@ insert into card (card_number, account_id) values ('8742 3981 2751 6253', 3);
 insert into card (card_number, account_id) values ('8972 3461 2837 4597', 4);
 insert into subscription (subscription_name) values ('Услуга оповещения об операциях');
 insert into subscription (subscription_name) values ('Услуга повышенный кэшбэк');
+insert into subscription (subscription_name) values ('Услуга приоритетного обслуживания');
 insert into customer_subscription (customer_id, subscription_id) values (1, 1);
 insert into customer_subscription (customer_id, subscription_id) values (1, 2);
 insert into customer_subscription (customer_id, subscription_id) values (2, 1);

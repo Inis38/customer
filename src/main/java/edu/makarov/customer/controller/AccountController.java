@@ -33,7 +33,7 @@ public class AccountController {
 
         return accountService.findAllByCustomerId(customerId)
                 .map(accounts -> new ResponseEntity<>(accounts, HttpStatus.OK))
-                .orElseThrow(() -> new RecordNotFoundException("Customer with id '" + customerId + "' not found"));
+                .orElseThrow(() -> new RecordNotFoundException("This client has no subscriptions or a client with this id '" + customerId + "' does not exist"));
     }
 
     @ApiOperation(value = "Fetch Account by Id", response = Account.class)

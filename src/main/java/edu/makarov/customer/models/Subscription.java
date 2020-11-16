@@ -3,10 +3,7 @@ package edu.makarov.customer.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
@@ -15,9 +12,10 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@ToString(of = { "id", "name"})
+@EqualsAndHashCode(of = { "id" })
 @Table(name = "Subscription")
 @ApiModel(description = "Subscription Model")
-@ToString(of = { "id", "name"})
 public class Subscription {
 
     @Id

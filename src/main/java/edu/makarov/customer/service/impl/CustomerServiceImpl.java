@@ -1,8 +1,10 @@
 package edu.makarov.customer.service.impl;
 
-import edu.makarov.customer.controller.CustomerController;
 import edu.makarov.customer.models.Customer;
+import edu.makarov.customer.models.Subscription;
+import edu.makarov.customer.models.dto.SubscriptionManagementDTO;
 import edu.makarov.customer.repository.CustomerRepository;
+import edu.makarov.customer.repository.SubscriptionRepository;
 import edu.makarov.customer.service.CustomerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.*;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -19,10 +23,12 @@ public class CustomerServiceImpl implements CustomerService {
     private static final Logger logger = LogManager.getLogger(CustomerServiceImpl.class);
 
     private final CustomerRepository customerRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     @Autowired
-    public CustomerServiceImpl(CustomerRepository customerRepository) {
+    public CustomerServiceImpl(CustomerRepository customerRepository, SubscriptionRepository subscriptionRepository) {
         this.customerRepository = customerRepository;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     @Override
@@ -38,7 +44,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer create(Customer customer) {
-        logger.info("Новый клиент - {}", customer);
+        logger.info("Сохраняем клиента - {}", customer);
         return customerRepository.save(customer);
     }
 
@@ -62,5 +68,39 @@ public class CustomerServiceImpl implements CustomerService {
         logger.warn("Клиент с id {} удален", id);
         customerRepository.deleteById(id);
         return true;
+    }
+
+    @Override
+    public Optional<List<Subscription>> findSubscriptions(long customerId) {
+        logger.info("Запрос списка подписок клиента с id {}", customerId);
+        return findById(customerId)
+                .map(subscriptionRepository::findSubscriptionsByCustomers)
+                .orElse(Optional.empty());
+    }
+
+    @Override
+    public Optional<Set<Subscription>> addSubscription(SubscriptionManagementDTO subDto) {
+        logger.info("Клиенту с id {} добавляем подписку с id {}", subDto.getCustomerId(), subDto.getSubscriptionId());
+        return manageSubscriptions(subDto, ((subscription, subscriptions) -> subscriptions.add(subscription)));
+    }
+
+    @Override
+    public Optional<Set<Subscription>> deleteSubscription(SubscriptionManagementDTO subDto) {
+        logger.info("Удалем подписку с id {} у клиента с id {}", subDto.getSubscriptionId(), subDto.getCustomerId());
+        return manageSubscriptions(subDto, ((subscription, subscriptions) -> subscriptions.remove(subscription)));
+    }
+
+    private Optional<Set<Subscription>> manageSubscriptions(SubscriptionManagementDTO subDto, BiConsumer<Subscription, Set<Subscription>> manager) {
+        Optional<Customer> customer = findById(subDto.getCustomerId());
+        Optional<Subscription> subscription = subscriptionRepository.findById(subDto.getSubscriptionId());
+        if (!customer.isPresent() || !subscription.isPresent()) {
+            logger.warn("Клиента с id {} или подписки с id {} не существует", subDto.getCustomerId(), subDto.getSubscriptionId());
+            return Optional.empty();
+        }
+        Customer customerFromDb = customer.get();
+        Set<Subscription> subscriptionsFromDb = customerFromDb.getSubscriptions();
+        manager.accept(subscription.get(), subscriptionsFromDb);
+
+        return Optional.of(create(customerFromDb).getSubscriptions());
     }
 }
