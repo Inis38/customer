@@ -8,8 +8,10 @@ import edu.makarov.customer.repository.SubscriptionRepository;
 import edu.makarov.customer.service.CustomerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,13 +24,23 @@ public class CustomerServiceImpl implements CustomerService {
 
     private static final Logger logger = LogManager.getLogger(CustomerServiceImpl.class);
 
+    @Value("${customer.exchange}")
+    private String exchange;
+
+    @Value("${customer.routing.key}")
+    private String routingKey;
+
     private final CustomerRepository customerRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final RabbitTemplate template;
 
     @Autowired
-    public CustomerServiceImpl(CustomerRepository customerRepository, SubscriptionRepository subscriptionRepository) {
+    public CustomerServiceImpl(CustomerRepository customerRepository,
+                               SubscriptionRepository subscriptionRepository,
+                               RabbitTemplate template) {
         this.customerRepository = customerRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.template = template;
     }
 
     @Override
@@ -102,5 +114,16 @@ public class CustomerServiceImpl implements CustomerService {
         manager.accept(subscription.get(), subscriptionsFromDb);
 
         return Optional.of(create(customerFromDb).getSubscriptions());
+    }
+
+    @Override
+    public Optional<Customer> sendCustomerToQueue(long customerId) {
+
+        return findById(customerId)
+                .map(customer -> {
+                    template.convertAndSend(exchange, routingKey, customer);
+                    return Optional.of(customer);
+                })
+                .orElse(Optional.empty());
     }
 }

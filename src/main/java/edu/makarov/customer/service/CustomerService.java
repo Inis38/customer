@@ -15,4 +15,6 @@ public interface CustomerService extends BaseService<Customer> {
     Optional<Set<Subscription>> addSubscription(SubscriptionManagementDTO subDto);
 
     Optional<Set<Subscription>> deleteSubscription(SubscriptionManagementDTO subDto);
+
+    Optional<Customer> sendCustomerToQueue(long customerId);
 }
