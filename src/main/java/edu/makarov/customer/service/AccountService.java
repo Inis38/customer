@@ -18,4 +18,6 @@ public interface AccountService extends BaseService<Account> {
     Optional<Account> reduceBalance(BalanceChangeDTO balanceChangeDTO);
 
     boolean transferMoney(MoneyTransactionDTO transaction);
+
+    Optional<Account> sendAccountToQueue(long id);
 }

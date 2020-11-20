@@ -21,9 +21,31 @@ public class RabbitConfig {
     @Value("${customer.routing.key}")
     private String routingKey;
 
+    @Value("${account.queue1}")
+    private String accountQueue1;
+
+    @Value("${account.queue2}")
+    private String accountQueue2;
+
+    @Value("${account.exchange}")
+    private String accountExchange;
+
+    @Value("${account.routing.key}")
+    private String accountRoutingKey;
+
     @Bean
     public Queue queue() {
         return new Queue(queue);
+    }
+
+    @Bean
+    public Queue queueAccount1() {
+        return new Queue(accountQueue1);
+    }
+
+    @Bean
+    public Queue queueAccount2() {
+        return new Queue(accountQueue2);
     }
 
     @Bean
@@ -32,8 +54,23 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(routingKey);
+    public TopicExchange accountExchange() {
+        return new TopicExchange(accountExchange);
+    }
+
+    @Bean
+    public Binding binding() {
+        return BindingBuilder.bind(queue()).to(exchange()).with(routingKey);
+    }
+
+    @Bean
+    public Binding accountBinding1() {
+        return BindingBuilder.bind(queueAccount1()).to(accountExchange()).with(accountRoutingKey);
+    }
+
+    @Bean
+    public Binding accountBinding2() {
+        return BindingBuilder.bind(queueAccount2()).to(accountExchange()).with(accountRoutingKey);
     }
 
     @Bean

@@ -1,7 +1,6 @@
 package edu.makarov.customer.service.impl;
 
 import edu.makarov.customer.models.Account;
-import edu.makarov.customer.models.Customer;
 import edu.makarov.customer.models.dto.BalanceChangeDTO;
 import edu.makarov.customer.models.dto.MoneyTransactionDTO;
 import edu.makarov.customer.repository.AccountRepository;
@@ -9,12 +8,13 @@ import edu.makarov.customer.service.AccountService;
 import edu.makarov.customer.service.CustomerService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,13 +22,24 @@ import java.util.Optional;
 public class AccountServiceImpl implements AccountService {
 
     private static final Logger logger = LogManager.getLogger(AccountServiceImpl.class);
+
+    @Value("${account.exchange}")
+    private String exchange;
+
+    @Value("${account.routing.key}")
+    private String routingKey;
+
     private final AccountRepository accountRepository;
     private final CustomerService customerService;
+    private final RabbitTemplate template;
 
     @Autowired
-    public AccountServiceImpl(AccountRepository accountRepository, CustomerService customerService) {
+    public AccountServiceImpl(AccountRepository accountRepository,
+                              CustomerService customerService,
+                              RabbitTemplate template) {
         this.accountRepository = accountRepository;
         this.customerService = customerService;
+        this.template = template;
     }
 
     @Override
@@ -156,5 +167,15 @@ public class AccountServiceImpl implements AccountService {
         increaseBalance(accountTo.get().getId(), sum);
         logger.warn("Денежные средства переведены со счета #{} на счет #{}", from, to);
         return true;
+    }
+
+    @Override
+    public Optional<Account> sendAccountToQueue(long accountId) {
+        return findById(accountId)
+                .map(account -> {
+                    template.convertAndSend(exchange, routingKey, account);
+                    return Optional.of(account);
+                })
+                .orElse(Optional.empty());
     }
 }
