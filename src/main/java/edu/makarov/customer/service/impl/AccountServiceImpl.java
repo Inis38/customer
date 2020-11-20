@@ -18,6 +18,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Class for performing operations with accounts
+ */
 @Service
 public class AccountServiceImpl implements AccountService {
 
@@ -42,11 +45,22 @@ public class AccountServiceImpl implements AccountService {
         this.template = template;
     }
 
+    /**
+     * Returns a list of all accounts from the database
+     *
+     * @return List of accounts
+     */
     @Override
     public List<Account> findAll() {
         return accountRepository.findAll();
     }
 
+    /**
+     * Returns a list of all client accounts with the specified id
+     *
+     * @param id client id from database
+     * @return List of customer accounts
+     */
     @Override
     public Optional<List<Account>> findAllByCustomerId(long id) {
 
@@ -56,18 +70,37 @@ public class AccountServiceImpl implements AccountService {
                 .orElse(Optional.empty());
     }
 
+    /**
+     * Search for an Account by its id
+     *
+     * @param id account id from database
+     * @return customer Account
+     */
     @Override
     public Optional<Account> findById(long id) {
         logger.info("Запрос инфмормации о счете с id {}", id);
         return accountRepository.findById(id);
     }
 
+    /**
+     * Save Account to database
+     *
+     * @param account Account to be kept
+     * @return Saved Account
+     */
     @Override
     public Account create(Account account) {
         logger.info("Сохраняем счет для клиента с id {}, счет - {}", account.getCustomer().getId(), account);
         return accountRepository.save(account);
     }
 
+    /**
+     * Save an Account for a specific customer
+     *
+     * @param account Account to be kept
+     * @param customerId The id of the Customer who will own the account
+     * @return Saved Account
+     */
     @Override
     public Optional<Account> create(Account account, long customerId) {
 
@@ -79,6 +112,13 @@ public class AccountServiceImpl implements AccountService {
                 .orElse(Optional.empty());
     }
 
+    /**
+     * Update account information
+     *
+     * @param id Account id
+     * @param account the Account to be updated
+     * @return Saved Account
+     */
     @Override
     public Optional<Account> update(long id, Account account) {
         logger.info("Обновляем информауию о счете с id {}, счет - {}", id, account);
@@ -90,6 +130,12 @@ public class AccountServiceImpl implements AccountService {
                 .orElse(Optional.empty());
     }
 
+    /**
+     * Delete account
+     *
+     * @param id Account id
+     * @return False if no such account exists, otherwise true
+     */
     @Override
     public boolean delete(long id) {
         if (!findById(id).isPresent()) {
@@ -101,6 +147,13 @@ public class AccountServiceImpl implements AccountService {
         return true;
     }
 
+    /**
+     * Increases the Account balance.
+     * Checks that the id and the sum are correct, the sum is greater than zero.
+     *
+     * @param balanceChangeDTO A class containing a request to change the balance
+     * @return Account with new balance
+     */
     @Override
     public Optional<Account> increaseBalance(BalanceChangeDTO balanceChangeDTO) {
 
@@ -123,6 +176,14 @@ public class AccountServiceImpl implements AccountService {
                 .orElse(Optional.empty());
     }
 
+    /**
+     * Decrease in account balance.
+     * Used for operations with funds withdrawal, payment and money transfer.
+     * Checks that the account contains the amount required to be debited.
+     *
+     * @param balanceChangeDTO A class containing a request to change the balance
+     * @return Account with new balance
+     */
     @Override
     public Optional<Account> reduceBalance(BalanceChangeDTO balanceChangeDTO) {
         long id = balanceChangeDTO.getId();
@@ -148,6 +209,12 @@ public class AccountServiceImpl implements AccountService {
                 .orElse(Optional.empty());
     }
 
+    /**
+     * Performs the operation of transferring funds from account to account.
+     *
+     * @param transaction Class containing data for transferring funds
+     * @return
+     */
     @Override
     public boolean transferMoney(MoneyTransactionDTO transaction) {
         BigDecimal sum = transaction.getSum().setScale(2, BigDecimal.ROUND_DOWN);
@@ -169,6 +236,12 @@ public class AccountServiceImpl implements AccountService {
         return true;
     }
 
+    /**
+     * Method for sending an account to mq
+     *
+     * @param accountId Account id
+     * @return Account
+     */
     @Override
     public Optional<Account> sendAccountToQueue(long accountId) {
         return findById(accountId)

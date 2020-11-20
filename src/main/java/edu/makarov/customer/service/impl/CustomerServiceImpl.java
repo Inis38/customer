@@ -19,6 +19,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.*;
 
+/**
+ * Class for performing operations on a Customer
+ */
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
@@ -43,23 +46,47 @@ public class CustomerServiceImpl implements CustomerService {
         this.template = template;
     }
 
+    /**
+     * Find all Customers in the database
+     *
+     * @return List of Customer
+     */
     @Override
     public List<Customer> findAll() {
         return customerRepository.findAll();
     }
 
+    /**
+     * Find a Customer by his id
+     *
+     * @param id Customer id
+     * @return Customer
+     */
     @Override
     public Optional<Customer> findById(long id) {
         logger.info("Запрос информации о клиенте с id {}", id);
         return customerRepository.findById(id);
     }
 
+    /**
+     * Save Customer information
+     *
+     * @param customer Customer information
+     * @return Saved Customer
+     */
     @Override
     public Customer create(Customer customer) {
         logger.info("Сохраняем клиента - {}", customer);
         return customerRepository.save(customer);
     }
 
+    /**
+     * Update Customer information
+     *
+     * @param id Customer id
+     * @param customer Customer information
+     * @return Saved Customer
+     */
     @Override
     public Optional<Customer> update(long id, Customer customer) {
         logger.info("Обновление информации о клиенте с id {}, новые данные - {}", id,  customer);
@@ -71,6 +98,12 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElse(Optional.empty());
     }
 
+    /**
+     * Delete Customer
+     *
+     * @param id Customer id
+     * @return True, if there is no Customer with such an id, then false
+     */
     @Override
     public boolean delete(long id) {
         if (!findById(id).isPresent()) {
@@ -82,6 +115,12 @@ public class CustomerServiceImpl implements CustomerService {
         return true;
     }
 
+    /**
+     * Find all Customer Subscriptions
+     *
+     * @param customerId Customer id
+     * @return Customer Subscription List
+     */
     @Override
     public Optional<List<Subscription>> findSubscriptions(long customerId) {
         logger.info("Запрос списка подписок клиента с id {}", customerId);
@@ -90,12 +129,24 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElse(Optional.empty());
     }
 
+    /**
+     * Add Subscription to Customer
+     *
+     * @param subDto class contains information for managing Subscriptions
+     * @return Saves Customer
+     */
     @Override
     public Optional<Set<Subscription>> addSubscription(SubscriptionManagementDTO subDto) {
         logger.info("Клиенту с id {} добавляем подписку с id {}", subDto.getCustomerId(), subDto.getSubscriptionId());
         return manageSubscriptions(subDto, ((subscription, subscriptions) -> subscriptions.add(subscription)));
     }
 
+    /**
+     * Remove Customer Subscription
+     *
+     * @param subDto class contains information for managing Subscriptions
+     * @return Saves Customer
+     */
     @Override
     public Optional<Set<Subscription>> deleteSubscription(SubscriptionManagementDTO subDto) {
         logger.info("Удалем подписку с id {} у клиента с id {}", subDto.getSubscriptionId(), subDto.getCustomerId());
@@ -116,6 +167,12 @@ public class CustomerServiceImpl implements CustomerService {
         return Optional.of(create(customerFromDb).getSubscriptions());
     }
 
+    /**
+     * Method for sending an Customer to mq
+     *
+     * @param customerId Customer id
+     * @return Customer
+     */
     @Override
     public Optional<Customer> sendCustomerToQueue(long customerId) {
 
