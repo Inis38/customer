@@ -104,10 +104,11 @@ public class CardServiceImpl implements CardService {
      */
     @Override
     public Optional<Card> update(long id, Card card) {
-        logger.info("Обновляем информацию о карте для аккаунта с id {}, {}", card.getAccount().getId(), card);
+
         return findById(id)
                 .map(cardFromDb -> {
-                    BeanUtils.copyProperties(card, cardFromDb, "id");
+                    logger.info("Обновляем информацию о карте для аккаунта с id {}, {}", cardFromDb.getAccount().getId(), card);
+                    BeanUtils.copyProperties(card, cardFromDb, "id", "account");
                     return Optional.of(create(cardFromDb));
                 })
                 .orElse(Optional.empty());
