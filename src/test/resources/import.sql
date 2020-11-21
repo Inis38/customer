@@ -17,6 +17,7 @@ insert into subscription (subscription_name) values ('Услуга оповещ�
 insert into subscription (subscription_name) values ('Услуга повышенный кэшбэк');
 insert into subscription (subscription_name) values ('Услуга приоритетного обслуживания');
 insert into subscription (subscription_name) values ('Все услуги в одном пакете');
+insert into subscription (subscription_name) values ('Услуга');
 insert into customer_subscription (customer_id, subscription_id) values (1, 1);
 insert into customer_subscription (customer_id, subscription_id) values (1, 2);
 insert into customer_subscription (customer_id, subscription_id) values (2, 1);
