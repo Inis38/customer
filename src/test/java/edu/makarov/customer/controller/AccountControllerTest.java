@@ -4,8 +4,6 @@ import edu.makarov.customer.exception.ErrorResponse;
 import edu.makarov.customer.models.Account;
 import edu.makarov.customer.models.dto.BalanceChangeDTO;
 import edu.makarov.customer.models.dto.MoneyTransactionDTO;
-import org.checkerframework.checker.units.qual.A;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -137,11 +135,11 @@ public class AccountControllerTest {
         HttpEntity<BalanceChangeDTO> entity = new HttpEntity<>(balanceChangeDTO);
 
         ResponseEntity<Account> response = restTemplate.exchange("/customers/{id}/accounts/{id}/addbalance", HttpMethod.PUT, entity,
-                                                                        Account.class, 1, 1);
+                                                                        Account.class, 3, 4);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
         Assert.assertNotNull(response.getBody());
-        Assert.assertEquals(response.getBody().getBalance(), new BigDecimal("6000.00"));
+        Assert.assertEquals(response.getBody().getBalance(), new BigDecimal("19000.00"));
     }
 
     @Test
@@ -163,12 +161,12 @@ public class AccountControllerTest {
         HttpEntity<BalanceChangeDTO> entity = new HttpEntity<>(balanceChangeDTO);
 
         ResponseEntity<Account> response = restTemplate.exchange("/customers/{id}/accounts/{id}/pay", HttpMethod.PUT, entity,
-                Account.class, 1, 1);
+                Account.class, 2, 3);
 
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
         Assert.assertNotNull(response.getBody());
-        Assert.assertEquals(response.getBody().getBalance(), new BigDecimal("4000.00"));
+        Assert.assertEquals(response.getBody().getBalance(), new BigDecimal("19000.00"));
     }
 
     @Test
