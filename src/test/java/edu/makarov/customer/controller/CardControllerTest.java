@@ -47,10 +47,10 @@ public class CardControllerTest {
     @Test
     public void findByIdTest() {
         ResponseEntity<Card> response = restTemplate.getForEntity("/customers/{id}/accounts/{id}/cards/{id}",
-                Card.class, 1, 2, 3);
+                Card.class, 1, 4, 6);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
         Assert.assertNotNull(response.getBody());
-        Assert.assertEquals(response.getBody().getCardNumber(), "8726 2841 2987 6378");
+        Assert.assertEquals(response.getBody().getCardNumber(), "8972 3461 2837 4597");
     }
 
     @Test
@@ -120,16 +120,16 @@ public class CardControllerTest {
 
     @Test
     public void deleteTest() {
-        ResponseEntity<Account> response = restTemplate.exchange("/customers/{id}/accounts/{id}/cards/{id}",
-                HttpMethod.DELETE, null, Account.class, 1, 1, 2);
+        ResponseEntity<Card> response = restTemplate.exchange("/customers/{id}/accounts/{id}/cards/{id}",
+                HttpMethod.DELETE, null, Card.class, 1, 1, 2);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
     @Test
     public void deleteFailTest() {
-        ResponseEntity<Account> response = restTemplate.exchange("/customers/{id}/accounts/{id}/cards/{id}",
-                HttpMethod.DELETE, null, Account.class, 1, 1, 10);
+        ResponseEntity<Card> response = restTemplate.exchange("/customers/{id}/accounts/{id}/cards/{id}",
+                HttpMethod.DELETE, null, Card.class, 1, 1, 10);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.BAD_REQUEST);
     }
