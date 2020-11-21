@@ -90,6 +90,7 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public Account create(Account account) {
+
         logger.info("Сохраняем счет для клиента с id {}, счет - {}", account.getCustomer().getId(), account);
         return accountRepository.save(account);
     }
@@ -124,7 +125,7 @@ public class AccountServiceImpl implements AccountService {
         logger.info("Обновляем информауию о счете с id {}, счет - {}", id, account);
         return findById(id)
                 .map(accountFromDb -> {
-                    BeanUtils.copyProperties(account, accountFromDb, "id");
+                    BeanUtils.copyProperties(account, accountFromDb, "id", "customer");
                     return Optional.of(create(accountFromDb));
                 })
                 .orElse(Optional.empty());
@@ -213,7 +214,7 @@ public class AccountServiceImpl implements AccountService {
      * Performs the operation of transferring funds from account to account.
      *
      * @param transaction Class containing data for transferring funds
-     * @return
+     * @return true, if successful
      */
     @Override
     public boolean transferMoney(MoneyTransactionDTO transaction) {

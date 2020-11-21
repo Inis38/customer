@@ -87,7 +87,7 @@ public class AccountController {
     public ResponseEntity<Account> pay(@PathVariable("id") long id, @RequestBody BalanceChangeDTO balanceChangeDTO) {
 
         balanceChangeDTO.setId(id);
-        return accountService.increaseBalance(balanceChangeDTO)
+        return accountService.reduceBalance(balanceChangeDTO)
                 .map(account -> new ResponseEntity<>(account, HttpStatus.OK))
                 .orElseThrow(() -> new BadRequestException("Failed to write off funds from the account with id '" + id + "'"));
     }
